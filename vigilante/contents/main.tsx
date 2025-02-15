@@ -7,6 +7,7 @@ import { sendToBackground } from "@plasmohq/messaging"
 import FactCheckFlag from "~components/FactCheckFlag"
 
 import { extractTweetDataFromElement } from "../utils/extractTweetData"
+import { getCachedAnalysis, setCachedAnalysis } from "../utils/cache"
 
 const ContentScript = () => {
   useEffect(() => {
@@ -37,6 +38,13 @@ const ContentScript = () => {
               hasMedia: tweetData.media.length > 0
             })
 
+            // Check cache first
+            const cachedResult = await getCachedAnalysis(tweetData.id)
+            if (cachedResult) {
+              console.log("📦 Using cached analysis for tweet:", tweetData.id)
+              return cachedResult
+            }
+
             // Skip video tweets with short text
             if (
               tweetData.media.some((media) => media.includes("video_thumb")) &&
@@ -54,6 +62,11 @@ const ContentScript = () => {
             const promise = sendToBackground({
               name: "analyze",
               body: tweetData
+            })
+
+            // Cache the result when promise resolves
+            promise.then(result => {
+              setCachedAnalysis(tweetData.id, result)
             })
 
             // Find metrics bar and insert flag component

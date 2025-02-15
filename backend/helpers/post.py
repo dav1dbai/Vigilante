@@ -95,18 +95,36 @@ def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp, sa
         if verifiable:
             if base64_image:
                 try:
-                    image_data = base64.b64decode(base64_image)
-                    with open("image.png", "wb") as f:
-                        f.write(image_data)
+                    # Create message with image for caption extraction
+                    image_message = [
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": "Describe the main content of this image, focusing especially on extracting any text."},
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"{base64_image}"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                    
+                    # Get image caption
+                    image_caption = call_groq(image_message, model="llama-3.2-11b-vision-preview")["content"]
+                    print("image_caption", image_caption)
+                    # Combine tweet text with image caption for claim evaluation
+                    combined_content = f"{tweet_text}\n[Image content: {image_caption}]"
+                    claim_results = evaluate_claims_in_post(
+                        author=tweet_author, content=combined_content)
                 except Exception as e:
-                    return {
-                        "error": "Failed to decode and save the base64 image.",
-                        "details": str(e)
-                    }
-
-            # TODO: handle image
-            claim_results = evaluate_claims_in_post(
-                author=tweet_author, content=tweet_text)
+                    print(f"Error processing image for tweet {tweet_id}: {str(e)}")
+                    claim_results = evaluate_claims_in_post(
+                        author=tweet_author, content=tweet_text)
+            else:
+                claim_results = evaluate_claims_in_post(
+                    author=tweet_author, content=tweet_text)
 
             is_misleading = any(c["is_misleading"] for c in claim_results)
         else:
