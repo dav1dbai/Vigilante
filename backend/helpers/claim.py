@@ -17,7 +17,7 @@ def fact_check_claim(post_content: str, claim: str):
         }
     ])
 
-    sources = completion["sources"]
+    sources = completion["citations"]
     explanation = completion["content"]
 
     return (sources, explanation)
