@@ -23,6 +23,11 @@ const ContentScript = () => {
 
             try {
               // Add extra logging before sending the message
+              if (tweetData.media.some(media => media.includes("video_thumb")) && tweetData.text.length < 20) {
+                console.log("ignoring video tweets")
+                // TODO: add a flag to the tweet
+                return;
+              }
               console.log("Sending tweet data to background with name 'analyze'...", tweetData);
               const result = await sendToBackground({
                 name: "analyze",
