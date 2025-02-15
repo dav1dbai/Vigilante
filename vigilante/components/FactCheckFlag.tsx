@@ -2,9 +2,15 @@ import React, { useState } from 'react';
 
 export type FactCheckFlagProps = {
   result: boolean;
+  claims?: {
+    claim: string;
+    sources: string[];
+    explanation: string;
+    is_misleading: boolean;
+  }[];
 };
 
-const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ result }) => {
+const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ result, claims }) => {
   const [showModal, setShowModal] = useState(false);
 
   const style: React.CSSProperties = {
@@ -68,19 +74,18 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ result }) => {
     }
   };
 
+  // If result is true or null/undefined, don't render anything
+  if (result) {
+    return null;
+  }
+
   return (
     <>
       <div className="fact-check-flag" style={style} onClick={handleFlagClick}>
-        {result ? (
-          <svg style={iconStyle} viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.72 6.96l-4.2 4.2a.75.75 0 01-1.06 0l-2.18-2.18a.75.75 0 011.06-1.06l1.65 1.65 3.67-3.67a.75.75 0 111.06 1.06z"/>
-          </svg>
-        ) : (
-          <svg style={iconStyle} viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zm0-11a.75.75 0 01.75.75v4a.75.75 0 01-1.5 0v-4A.75.75 0 018 3.5zM8 10a1 1 0 100 2 1 1 0 000-2z"/>
-          </svg>
-        )}
-        {result ? "Verified Information" : "Flagged as Misinformation"}
+        <svg style={iconStyle} viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zm0-11a.75.75 0 01.75.75v4a.75.75 0 01-1.5 0v-4A.75.75 0 018 3.5zM8 10a1 1 0 100 2 1 1 0 000-2z"/>
+        </svg>
+        Flagged as Misinformation
       </div>
 
       {showModal && (
@@ -90,13 +95,41 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ result }) => {
               {result ? "Verification Details" : "False Claims"}
             </h3>
             <div style={modalContentStyle}>
-              {result ? (
-                "This information has been verified by trusted sources."
+              {claims ? (
+                claims.map((claim, index) => (
+                  <div key={index} className="mb-6 last:mb-0">
+                    <p className="font-medium mb-2">{claim.claim}</p>
+                    <p className="text-[14px] mb-2">{claim.explanation}</p>
+                    {claim.sources.length > 0 && (
+                      <div className="text-[12px] text-neutral-400">
+                        <p className="mb-1">Sources:</p>
+                        <ul className="list-disc pl-4">
+                          {claim.sources.map((source, idx) => (
+                            <li key={idx}>
+                              <a 
+                                href={source} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="hover:underline"
+                              >
+                                {source}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))
               ) : (
-                <>
-                  <p style={{ margin: "0 0 12px 0" }}>This claim has been marked as false.</p>
-                  <p style={{ margin: 0 }}>Additional context: This is a misrepresentation of the facts. Please refer to reliable sources for accurate information.</p>
-                </>
+                result ? (
+                  "This information has been verified by trusted sources."
+                ) : (
+                  <>
+                    <p style={{ margin: "0 0 12px 0" }}>This claim has been marked as false.</p>
+                    <p style={{ margin: 0 }}>Additional context: This is a misrepresentation of the facts. Please refer to reliable sources for accurate information.</p>
+                  </>
+                )
               )}
             </div>
           </div>
