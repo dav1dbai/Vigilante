@@ -1,9 +1,8 @@
 from typing import Optional
 from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
-import base64
 
-from helpers.post import evaluate_claims_in_post
+from helpers.post import analyze_post
 
 app = FastAPI()
 
@@ -25,7 +24,7 @@ def analyze_tweet(
     tweet_id: str = Body(..., embed=True),
     tweet_author: str = Body(..., embed=True),
     tweet_text: str = Body(..., embed=True),
-    base64_image: Optional[str] = Body(..., embed=True)
+    base64_image: Optional[str] = Body(None, embed=True)
 ):
     """
     Accepts:
@@ -51,27 +50,4 @@ def analyze_tweet(
          }
     """
 
-    if base64_image:
-        try:
-            image_data = base64.b64decode(base64_image)
-            with open("image.png", "wb") as f:
-                f.write(image_data)
-        except Exception as e:
-            return {
-                "error": "Failed to decode and save the base64 image.",
-                "details": str(e)
-            }
-
-    # TODO: handle image
-    claim_results = evaluate_claims_in_post(
-        author=tweet_author, content=tweet_text)
-
-    final_decision = all(c["is_misleading"] for c in claim_results)
-
-    response = {
-        "tweet_id": tweet_id,
-        "claims": claim_results,
-        "final_decision": final_decision
-    }
-
-    return response
+    return analyze_post(tweet_id, tweet_author, tweet_text, base64_image)
