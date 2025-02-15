@@ -89,7 +89,7 @@ def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, save_to_supab
                 for claim in claim_results:
                     supabase_client.table("claims").insert({
                         "original_tweet_id": tweet_id,
-                        "claim": claim["content"],
+                        "claim": claim["claim"],
                         "sources": claim["sources"],
                         "explanation": claim["explanation"],
                         "is_misleading": "misleading" if claim["is_misleading"] else "accurate"
