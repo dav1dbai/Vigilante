@@ -1,12 +1,27 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useStorage } from "@plasmohq/storage/hook"
+
 
 function IndexPopup() {
-  const [isEnabled, setIsEnabled] = useState(true)
-  const [semanticFilter, setSemanticFilter] = useState("")
-  const [excludedKeywords, setExcludedKeywords] = useState("")
-  const [isSemanticOpen, setIsSemanticOpen] = useState(false)
-  const [isKeywordsOpen, setIsKeywordsOpen] = useState(false)
+  const [isEnabled, setIsEnabled] = useStorage<boolean>(
+    "vigilante-enabled",
+    true // default value
+  )
+  
+  const [semanticFilter, setSemanticFilter] = useStorage<string>(
+    "vigilante-semantic-filter",
+    "" // default value
+  )
+  
+  const [excludedKeywords, setExcludedKeywords] = useStorage<string>(
+    "vigilante-excluded-keywords",
+    "" // default value
+  )
 
+  useEffect(() => {
+    console.log(isEnabled, semanticFilter, excludedKeywords)
+  }, [])
+  
   return (
     <div style={{
       width: "400px",
@@ -73,120 +88,68 @@ function IndexPopup() {
           </div>
         </div>
 
-        {/* Semantic Filter Dropdown */}
+        {/* Semantic Filter Field */}
         <div>
-          <div 
-            onClick={() => setIsSemanticOpen(!isSemanticOpen)}
-            style={{ 
-              cursor: "pointer",
-              marginBottom: isSemanticOpen ? "8px" : "0"
-            }}>
-            <h2 style={{ 
+          <h2 style={{ 
               fontSize: "14px",
-              fontWeight: 500,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center"
+              fontWeight: 500
             }}>
-              Semantic Filter
-              <svg 
-                style={{
-                  width: "20px",
-                  height: "20px",
-                  transform: isSemanticOpen ? "rotate(180deg)" : "rotate(0)",
-                  transition: "transform 0.2s",
-                }}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </h2>
-            <p style={{ 
+            Semantic Filter
+          </h2>
+          <p style={{ 
               fontSize: "12px",
               color: "rgb(161, 161, 170)"
-            }}>Only show posts matching these topics</p>
-          </div>
-          {isSemanticOpen && (
-            <textarea
-              value={semanticFilter}
-              onChange={(e) => setSemanticFilter(e.target.value)}
-              placeholder="I want to fact-check posts about elections, climate change, and public health"
-              style={{
-                width: "100%",
-                padding: "8px 12px",
-                fontSize: "14px",
-                borderRadius: "6px",
-                backgroundColor: "rgb(24, 24, 27)",
-                color: "rgb(244, 244, 245)",
-                border: "1px solid rgb(39, 39, 42)",
-                resize: "vertical",
-                minHeight: "60px",
-                outline: "none"
-              }}
-              rows={2}
-            />
-          )}
+            }}>
+            Only show posts matching these topics
+          </p>
+          <input
+            type="text"
+            value={semanticFilter}
+            onChange={(e) => setSemanticFilter(e.target.value)}
+            placeholder="machine learning"
+            style={{
+              width: "70%",
+              padding: "8px 12px",
+              fontSize: "14px",
+              borderRadius: "6px",
+              backgroundColor: "rgb(24, 24, 27)",
+              color: "rgb(244, 244, 245)",
+              border: "1px solid rgb(39, 39, 42)",
+              outline: "none",
+            }}
+          />
         </div>
 
-        {/* Keyword Exclusions Dropdown */}
+        {/* Keyword Exclusions Field */}
         <div>
-          <div 
-            onClick={() => setIsKeywordsOpen(!isKeywordsOpen)}
-            style={{ 
-              cursor: "pointer",
-              marginBottom: isKeywordsOpen ? "8px" : "0"
-            }}>
-            <h2 style={{ 
+          <h2 style={{
               fontSize: "14px",
-              fontWeight: 500,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center"
+              fontWeight: 500
             }}>
-              Excluded Keywords
-              <svg 
-                style={{
-                  width: "20px",
-                  height: "20px",
-                  transform: isKeywordsOpen ? "rotate(180deg)" : "rotate(0)",
-                  transition: "transform 0.2s",
-                }}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </h2>
-            <p style={{ 
+            Excluded Keywords
+          </h2>
+          <p style={{
               fontSize: "12px",
               color: "rgb(161, 161, 170)"
-            }}>Skip posts containing these words</p>
-          </div>
-          {isKeywordsOpen && (
-            <textarea
-              value={excludedKeywords}
-              onChange={(e) => setExcludedKeywords(e.target.value)}
-              placeholder="e.g., meme, joke, parody"
-              style={{
-                width: "100%",
-                padding: "8px 12px",
-                fontSize: "14px",
-                borderRadius: "6px",
-                backgroundColor: "rgb(24, 24, 27)",
-                color: "rgb(244, 244, 245)",
-                border: "1px solid rgb(39, 39, 42)",
-                resize: "vertical",
-                minHeight: "60px",
-                outline: "none"
-              }}
-              rows={2}
-            />
-          )}
+            }}>
+            Skip posts containing these words
+          </p>
+          <input
+            type="text"
+            value={excludedKeywords}
+            onChange={(e) => setExcludedKeywords(e.target.value)}
+            placeholder="coding, meme"
+            style={{
+              width: "70%",
+              padding: "8px 12px",
+              fontSize: "14px",
+              borderRadius: "6px",
+              backgroundColor: "rgb(24, 24, 27)",
+              color: "rgb(244, 244, 245)",
+              border: "1px solid rgb(39, 39, 42)",
+              outline: "none",
+            }}
+          />
         </div>
       </div>
     </div>

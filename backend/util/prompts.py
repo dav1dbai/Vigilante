@@ -61,3 +61,12 @@ Is this claim controversial/disputable?
 
 ONLY respond YES or NO. Do not respond with anything else.
 """
+
+SEMANTIC_RELEVANCE_PROMPT = """\
+Does this tweet fall under the following description?
+
+{description}
+
+ONLY respond YES or NO. Do not respond with anything else.
+"""
+
