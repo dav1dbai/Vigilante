@@ -42,7 +42,7 @@ def determine_is_misleading(post_content: str, claim: str, evidence: str):
         },
     ], model="llama-3.1-8b-instant")
 
-    return completion["content"] == "MISLEADING"
+    return completion["content"].strip() == "MISLEADING"
 
 
 def analyze_claim(post_content: str, claim: str):

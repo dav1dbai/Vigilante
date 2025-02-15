@@ -46,3 +46,9 @@ Given this explanation, respond with whether the claim is ACCURATE or MISLEADING
 
 Only respond with ACCURATE or MISLEADING, nothing else.
 """
+
+IS_VERIFIABLE_PROMPT = """\
+Does this statement make verifiable claims?
+
+ONLY respond YES or NO. Do not respond with anything else.
+"""
