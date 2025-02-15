@@ -1,8 +1,8 @@
 from typing import Optional
 from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
-
 from helpers.post import analyze_post
+from analytics.analytics import router as analytics_router  # Import analytics router
 
 app = FastAPI()
 
@@ -18,6 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
 
 @app.post("/analyze_tweet")
 def analyze_tweet(
