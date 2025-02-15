@@ -1,4 +1,5 @@
 import base64
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List
 
 from util.supabase import supabase_client
@@ -33,14 +34,23 @@ def evaluate_claims_in_post(author: str, content: str):
 
     evaluations = []
 
-    for claim in claims:
+    def process_claim(claim):
         sources, explanation, is_misleading = analyze_claim(content, claim)
-        evaluations.append({
+        return {
             "claim": claim,
             "sources": sources,
             "explanation": explanation,
             "is_misleading": is_misleading
-        })
+        }
+
+    with ThreadPoolExecutor() as executor:
+        futures = {executor.submit(process_claim, claim): claim for claim in claims}
+
+        for future in as_completed(futures):
+            try:
+                evaluations.append(future.result())
+            except Exception as e:
+                print(f"Error processing claim {futures[future]}: {e}")
 
     return evaluations
 
