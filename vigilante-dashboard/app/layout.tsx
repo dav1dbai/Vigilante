@@ -40,13 +40,13 @@ export default function RootLayout({
               </span>
             </div>
             <div className="flex space-x-4">
-              <Link href="/" className="font-semibold text-white hover:text-gray-300">
+              <Link href="/" className={`${poppins.className} font-semibold text-white hover:text-gray-300`}>
                 Home
               </Link>
-              <Link href="/analytics" className="font-semibold text-white hover:text-gray-300">
+              <Link href="/analytics" className={`${poppins.className} font-semibold text-white hover:text-gray-300`}>
                 Analytics
               </Link>
-              <Link href="/analytics/tweets-by-day" className="font-semibold text-white hover:text-gray-300">
+              <Link href="/analytics/tweets-by-day" className={`${poppins.className} font-semibold text-white hover:text-gray-300`}>
                 Tweets by Day
               </Link>
             </div>
