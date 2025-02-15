@@ -5,6 +5,10 @@ ONLY respond with the claims, and nothing else. Do NOT number the claims.
 
 Respond with a separate claim on a new line.
 
+IMAGE DESCRIPTIONS ARE NOT CLAIMS. "The woman is wearing a red dress" is not a claim. Something from the image context that could be a claim is extracted text or statements made in the image.
+
+FOCUS ON CLAIMS THAT ARE VERIFIABLE—— claims from broad generalizations, personal anecdotes, opinions, or statements that are not verifiable are not claims. Claims should be searchable and provable—— "the speaker is wrong" is not a valid claim, but "Donald Trump's speech improperly represents the Constitution" is.
+
 ## Example Input:
 Author: SWAFF
 Content: We could cure cancer, but we're feedin' our money to defense contractors and foreign gov'ts. and LGBTQ BS #CancerVaccine is our battle cry, showin' how we neglect our health for war. We need to make #MAHA lifestyle the American lifestyle.
@@ -14,7 +18,6 @@ We could cure cancer.
 Money is being sent to foreign governments and defense contractors instead of cancer research.
 The focus on LGBTQ issues distracts from cancer research and the need for a cancer vaccine.
 The US neglects its health in favor of funding war efforts.
-The MAHA lifestyle should be adopted as the American lifestyle.
 
 ## Example Input:
 Author: Charlie Kirk

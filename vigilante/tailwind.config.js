@@ -1,40 +1,42 @@
 module.exports = {
-  content: ["./{components,contents}/**/*.{js,jsx,ts,tsx,html}"],
+  content: [
+    "./{components,contents,popup}/**/*.{js,jsx,ts,tsx,html}",
+  ],
   theme: {
     extend: {
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: "rgb(9, 9, 11)", // zinc-950
+        foreground: "rgb(244, 244, 245)", // zinc-100
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))"
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))"
+          DEFAULT: "rgb(39, 39, 42)", // zinc-800
+          foreground: "rgb(244, 244, 245)" // zinc-100
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))"
+          DEFAULT: "rgb(153, 27, 27)", // red-800
+          foreground: "rgb(248, 113, 113)" // red-400
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))"
+          DEFAULT: "rgb(39, 39, 42)", // zinc-800
+          foreground: "rgb(161, 161, 170)" // zinc-400
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))"
+          DEFAULT: "rgb(39, 39, 42)", // zinc-800
+          foreground: "rgb(244, 244, 245)" // zinc-100
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))"
+          DEFAULT: "rgb(24, 24, 27)", // zinc-900
+          foreground: "rgb(244, 244, 245)" // zinc-100
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))"
+          DEFAULT: "rgb(24, 24, 27)", // zinc-900
+          foreground: "rgb(244, 244, 245)" // zinc-100
         }
       },
       borderRadius: {
