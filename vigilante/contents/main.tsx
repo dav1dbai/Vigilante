@@ -22,7 +22,7 @@ const ContentScript = () => {
     const processedTweets = new WeakSet<Element>()
     const observerOptions = {
       root: null,
-      rootMargin: "600px",
+      rootMargin: "1200px",
       threshold: 0
     }
 
