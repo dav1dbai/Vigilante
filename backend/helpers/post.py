@@ -33,6 +33,8 @@ def evaluate_claims_in_post(author: str, content: str):
 
     evaluations = []
 
+    print(claims)
+
     for claim in claims:
         sources, explanation, is_misleading = analyze_claim(content, claim)
         evaluations.append({
