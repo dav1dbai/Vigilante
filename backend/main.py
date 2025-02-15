@@ -24,7 +24,8 @@ def analyze_tweet(
     tweet_id: str = Body(..., embed=True),
     tweet_author: str = Body(..., embed=True),
     tweet_text: str = Body(..., embed=True),
-    base64_image: Optional[str] = Body(None, embed=True)
+    base64_image: Optional[str] = Body(None, embed=True),
+    timestamp: str = Body(..., embed=True)
 ):
     """
     Accepts:
@@ -49,5 +50,5 @@ def analyze_tweet(
            "final_decision": true/false
          }
     """
-
-    return analyze_post(tweet_id, tweet_author, tweet_text, base64_image)
+    print(f"Analyzing tweet with data: {tweet_id}, {tweet_author}, {tweet_text}")
+    return analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp)
