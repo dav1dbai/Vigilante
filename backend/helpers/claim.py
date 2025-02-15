@@ -1,4 +1,4 @@
-from util.llm import call_perplexity
+from util.llm import call_groq, call_perplexity
 from util.prompts import DETERMINE_IS_MISLEADING_PROMPT, SOURCES_INPUT_PROMPT, SOURCES_SYSTEM_PROMPT
 
 
@@ -27,7 +27,7 @@ def determine_is_misleading(post_content: str, claim: str, evidence: str):
     input_prompt = SOURCES_INPUT_PROMPT.format(
         post_content=post_content, claim=claim)
 
-    completion = call_perplexity([
+    completion = call_groq([
         {
             "role": "user",
             "content": input_prompt
