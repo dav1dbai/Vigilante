@@ -5,7 +5,7 @@ from typing import List
 from util.supabase import supabase_client
 from helpers.claim import analyze_claim
 from util.llm import call_groq
-from util.prompts import EXTRACT_CLAIMS_PROMPT, IS_VERIFIABLE_PROMPT
+from util.prompts import EXTRACT_CLAIMS_PROMPT, IS_VERIFIABLE_PROMPT, SEMANTIC_RELEVANCE_PROMPT
 
 
 def extract_claims(author: str, content: str) -> List[str]:
@@ -177,3 +177,17 @@ def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp, sa
         "claims": claim_results,
         "final_decision": is_misleading
     }
+
+def check_semantic_relevance(description, tweet_text):
+    completion = call_groq([
+        {
+            "role": "system",
+            "content": SEMANTIC_RELEVANCE_PROMPT.format(description=description)
+        },
+        {
+            "role": "user",
+            "content": tweet_text
+        }
+    ], model="gemma2-9b-it")
+
+    return completion["content"].strip() == "YES"

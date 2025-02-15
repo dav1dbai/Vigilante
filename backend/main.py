@@ -1,8 +1,9 @@
 from typing import Optional
 from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
-from helpers.post import analyze_post
+from helpers.post import analyze_post, check_semantic_relevance
 from analytics.analytics import router as analytics_router  # Import analytics router
+
 
 app = FastAPI()
 
@@ -53,3 +54,12 @@ def analyze_tweet(
     """
     print(f"Analyzing tweet with data: {tweet_id}, {tweet_author}, {tweet_text}")
     return analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp)
+
+
+@app.post("/semantic_filter")
+def semantic_filter(
+    description: str = Body(..., embed=True),
+    tweet_text: str = Body(..., embed=True)
+):
+  print(f"Checking semantic relevance for: {description}, {tweet_text}")
+  return check_semantic_relevance(description, tweet_text)
