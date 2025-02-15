@@ -48,7 +48,7 @@ Only respond with ACCURATE or MISLEADING, nothing else.
 """
 
 IS_VERIFIABLE_PROMPT = """\
-Does this statement make verifiable claims?
+Does this statement make researchable claims?
 
 ONLY respond YES or NO. Do not respond with anything else.
 """
