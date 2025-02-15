@@ -2,6 +2,7 @@
 import './globals.css';
 import React from 'react';
 import type { Metadata } from 'next';
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Vigilante Dashboard',
@@ -18,15 +19,15 @@ export default function RootLayout({
       <body className="bg-gray-100 text-gray-900">
         <header className="p-4 bg-white border-b shadow">
           <nav className="max-w-7xl mx-auto flex space-x-4">
-            <a href="/" className="font-semibold hover:underline">
+            <Link href="/" className="font-semibold hover:underline">
               Home
-            </a>
-            <a href="/analytics" className="font-semibold hover:underline">
+            </Link>
+            <Link href="/analytics" className="font-semibold hover:underline">
               Analytics
-            </a>
-            <a href="/analytics/tweets-by-day" className="font-semibold hover:underline">
+            </Link>
+            <Link href="/analytics/tweets-by-day" className="font-semibold hover:underline">
               Tweets by Day
-            </a>
+            </Link>
           </nav>
         </header>
         <main className="max-w-7xl mx-auto py-4">
