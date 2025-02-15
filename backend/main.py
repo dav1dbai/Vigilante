@@ -83,6 +83,34 @@ def analyze_tweet(
 
         final_decision = all(c["is_misleading"] for c in claim_results)
 
+        # save the tweet analysis to Supabase
+        try:
+            supabase.table("tweets").insert({
+                "original_tweet_id": tweet_id,
+                "author": tweet_author,
+                "text": tweet_text
+            }).execute()
+
+            for claim in claim_results:
+                supabase.table("claims").insert({
+                    "original_tweet_id": tweet_id,
+                    "claim": claim["content"],
+                    "sources": claim["sources"],
+                    "explanation": claim["explanation"],
+                    "is_misleading": "misleading" if claim["is_misleading"] else "accurate"
+                }).execute()
+
+            supabase.table("analyses").insert({
+                "original_tweet_id": tweet_id,
+                "is_misleading": "misleading" if final_decision else "accurate"
+            }).execute()
+
+        except Exception as e:
+            return {
+                "error": "Failed to save analysis to the database.",
+                "details": str(e)
+            }
+
     return {
         "tweet_id": tweet_id,
         "claims": claim_results,
