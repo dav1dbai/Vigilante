@@ -17,37 +17,53 @@ const ContentScript = () => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && !processedTweets.has(entry.target)) {
           const processTweet = async () => {
-            // Extract and log tweet data
+            // Extract tweet data
             const tweetData = extractTweetDataFromElement(entry.target);
-            console.log("Pre-fetched tweet data:", tweetData);
+            console.log("🔍 Tweet Detection:", {
+              id: tweetData.id,
+              text: tweetData.text.substring(0, 50) + "...",
+              hasMedia: tweetData.media.length > 0
+            });
 
             try {
-              // Add extra logging before sending the message
+              // Skip video tweets with short text
               if (tweetData.media.some(media => media.includes("video_thumb")) && tweetData.text.length < 20) {
-                console.log("ignoring video tweets")
-                // TODO: add a flag to the tweet
+                console.log("⏭️ Skipping video tweet:", tweetData.id);
                 return;
               }
-              console.log("Sending tweet data to background with name 'analyze'...", tweetData);
+
+              console.log("🔄 Analyzing tweet:", {
+                id: tweetData.id,
+                timestamp: new Date().toISOString()
+              });
+
               const result = await sendToBackground({
                 name: "analyze",
                 body: tweetData,
               });
-              console.log("Received background response:", result);
 
-              // Create a container element for the fact-check flag.
+              console.log("✅ Analysis complete:", {
+                tweetId: result.tweet_id,
+                claimsCount: !result.claims ? 0 : result.claims.length,
+                isMisleading: result.final_decision
+              });
+
+              // Create and append flag component
               const flagContainer = document.createElement("div");
               flagContainer.className = "fact-check-flag-container";
-
-              // Render the FactCheckFlag component using React 18's createRoot.
               const root = createRoot(flagContainer);
-              root.render(<FactCheckFlag result={result} />);
-
-              // Append the flag container to the tweet element.
+              root.render(<FactCheckFlag result={!result.final_decision} />);
               entry.target.appendChild(flagContainer);
-              console.log("Flag component appended with result:", result);
+              
+              console.log("🏁 Flag component rendered:", {
+                tweetId: result.tweet_id,
+                success: true
+              });
             } catch (error) {
-              console.error("Error in fact-checking API call:", error);
+              console.error("❌ Analysis failed:", {
+                tweetId: tweetData.id,
+                error: error.message
+              });
             }
 
             processedTweets.add(entry.target);
