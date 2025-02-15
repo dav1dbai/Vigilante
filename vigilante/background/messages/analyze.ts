@@ -16,8 +16,10 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
   
   // Extract required fields.
   const tweet_id = tweetData.id;
-  const tweet_author = tweetData.user.username || "Unknown";
+  const tweet_author = tweetData.mentionedUsers[0];
+  console.log("Tweet author:", tweet_author);
   const tweet_text = tweetData.text;
+  const timestamp = tweetData.date;
   let base64_image = "";
 
   // If a media URL exists, fetch the image and convert it to Base64.
@@ -40,6 +42,7 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
     tweet_author,
     tweet_text,
     base64_image,
+    timestamp
   };
 
   try {

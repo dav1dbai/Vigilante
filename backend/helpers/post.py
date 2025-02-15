@@ -33,8 +33,6 @@ def evaluate_claims_in_post(author: str, content: str):
 
     evaluations = []
 
-    print(claims)
-
     for claim in claims:
         sources, explanation, is_misleading = analyze_claim(content, claim)
         evaluations.append({
@@ -64,7 +62,7 @@ def is_verifiable(tweet_text):
     return completion["content"].strip() == "YES"
 
 
-def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, save_to_supabase=True):
+def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp, save_to_supabase=True):
     # check if already analyzed tweet
     response = supabase_client.table("tweets").select("id").eq(
         "original_tweet_id", tweet_id).execute()
@@ -111,7 +109,8 @@ def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, save_to_supab
                 supabase_client.table("tweets").insert({
                     "original_tweet_id": tweet_id,
                     "author": tweet_author,
-                    "text": tweet_text
+                    "text": tweet_text,
+                    "timestamp": timestamp
                 }).execute()
 
                 for claim in claim_results:
