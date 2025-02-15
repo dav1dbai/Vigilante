@@ -64,7 +64,7 @@ def analyze_tweet(
         claims_response = supabase.table("claims").select(
             "claim,sources,explanation,is_misleading").eq("tweet_id", tweet_id).execute()
 
-        claims = claims_response.data
+        claim_results = claims_response.data
     else:
         if base64_image:
             try:
