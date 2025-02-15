@@ -18,29 +18,35 @@ const ContentScript = () => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           if (!processedTweets.has(entry.target)) {
-            // Extract tweet data for logging.
             const tweetData = extractTweetDataFromElement(entry.target);
             console.log("Pre-fetched tweet data:", tweetData);
 
-            // Immediately hit the simulated API for fact checking.
-            simulateAPICall()
-              .then((result) => {
-                // Create a container element for the FactCheckFlag.
-                const flagContainer = document.createElement("div");
-                flagContainer.className = "fact-check-flag-container";
-
-                // Render the FactCheckFlag component using React 18's createRoot.
-                const root = createRoot(flagContainer);
-                root.render(<FactCheckFlag result={result} />);
-
-                // Append the flag container to the bottom of the tweet element.
-                entry.target.appendChild(flagContainer);
-                console.log("Flag component appended with result:", result);
-              })
-              .catch((error) => {
-                console.error("Error in fact-checking API call:", error);
-              });
-            processedTweets.add(entry.target);
+            // Find the metrics bar container
+            const metricsBar = entry.target.querySelector('[role="group"]');
+            
+            if (metricsBar) {
+              simulateAPICall()
+                .then((result) => {
+                  // Create wrapper div for proper positioning
+                  const wrapper = document.createElement("div");
+                  wrapper.style.width = "100%";
+                  wrapper.style.marginTop = "8px";
+                  wrapper.style.borderTop = "1px solid rgb(239, 243, 244)";
+                  wrapper.style.paddingTop = "12px";
+                  
+                  // Insert wrapper after the metrics bar
+                  metricsBar.parentNode?.insertBefore(wrapper, metricsBar.nextSibling);
+                  
+                  const root = createRoot(wrapper);
+                  root.render(<FactCheckFlag result={result} />);
+                  
+                  console.log("Flag component appended with result:", result);
+                })
+                .catch((error) => {
+                  console.error("Error in fact-checking API call:", error);
+                });
+              processedTweets.add(entry.target);
+            }
           }
           observer.unobserve(entry.target);
         }
