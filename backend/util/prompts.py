@@ -1,5 +1,5 @@
 EXTRACT_CLAIMS_PROMPT = """\
-Your task is to split a post into a list of claims.
+Your task is to split a post into a list of claims. The claims must be verifiable (able to be proven true/false).
 
 ONLY respond with the claims, and nothing else. Do NOT number the claims.
 
