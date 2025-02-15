@@ -1,33 +1,10 @@
 import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { extractTweetDataFromElement } from "./utils/extractTweetData";
-import { simulateAPICall } from "./utils/api";
-import FactCheckFlag from "./components/FactCheckFlag";
+import { extractTweetDataFromElement } from "../utils/extractTweetData";
+import { simulateAPICall } from "../utils/api";
+import FactCheckFlag from "../components/FactCheckFlag";
 
-// Define a streamlined TweetMetadata type (only storing successfully extracted data)
-interface TweetMetadata {
-  id: string;
-  text: string;
-  url: string;
-  epoch: number;
-  media: string[];
-  replyCount?: number;
-  retweetCount?: number;
-  likeCount?: number;
-  quoteCount?: number;
-  hashtags: string[];
-  mentionedUsers: string[];
-  links: string[];
-  user: {
-    username: string;
-    profileLink: string;
-    avatar?: string;
-  };
-  date: string;
-  type?: string;
-}
-
-function ContentScript() {
+const ContentScript = () => {
   useEffect(() => {
     const processedTweets = new WeakSet<Element>();
 
