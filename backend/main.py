@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import base64
 
 from helpers.post import evaluate_claims_in_post
+from util import supabase
 
 app = FastAPI()
 
@@ -51,27 +52,39 @@ def analyze_tweet(
          }
     """
 
-    if base64_image:
-        try:
-            image_data = base64.b64decode(base64_image)
-            with open("image.png", "wb") as f:
-                f.write(image_data)
-        except Exception as e:
-            return {
-                "error": "Failed to decode and save the base64 image.",
-                "details": str(e)
-            }
+    # check if already analyzed tweet
+    response = supabase.table("tweets").select("id").eq(
+        "original_tweet_id", tweet_id).execute()
+    if response.data:
+        analysis_response = supabase.table("analyses").select(
+            "is_misleading").eq("tweet_id", tweet_id).limit(1).single().execute()
 
-    # TODO: handle image
-    claim_results = evaluate_claims_in_post(
-        author=tweet_author, content=tweet_text)
+        final_decision = analysis_response.data['is_misleading'] == "misleading"
 
-    final_decision = all(c["is_misleading"] for c in claim_results)
+        claims_response = supabase.table("claims").select(
+            "claim,sources,explanation,is_misleading").eq("tweet_id", tweet_id).execute()
 
-    response = {
+        claims = claims_response.data
+    else:
+        if base64_image:
+            try:
+                image_data = base64.b64decode(base64_image)
+                with open("image.png", "wb") as f:
+                    f.write(image_data)
+            except Exception as e:
+                return {
+                    "error": "Failed to decode and save the base64 image.",
+                    "details": str(e)
+                }
+
+        # TODO: handle image
+        claim_results = evaluate_claims_in_post(
+            author=tweet_author, content=tweet_text)
+
+        final_decision = all(c["is_misleading"] for c in claim_results)
+
+    return {
         "tweet_id": tweet_id,
         "claims": claim_results,
         "final_decision": final_decision
     }
-
-    return response
