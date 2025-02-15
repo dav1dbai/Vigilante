@@ -1,142 +1,143 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react"
+
+import { Button } from "./ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "./ui/dialog"
+import { ScrollArea } from "./ui/scroll-area"
 
 export type FactCheckFlagProps = {
-  result: boolean;
-  claims?: {
-    claim: string;
-    sources: string[];
-    explanation: string;
-    is_misleading: boolean;
-  }[];
-};
+  tweetId: string
+  promise: Promise<{
+    final_decision: boolean | null
+    claims?: {
+      claim: string
+      sources: string[]
+      explanation: string
+      is_misleading: boolean
+    }[]
+  }>
+}
 
-const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ result, claims }) => {
-  const [showModal, setShowModal] = useState(false);
-
-  const style: React.CSSProperties = {
-    padding: "8px 12px",
-    backgroundColor: result ? "#E3F3E6" : "#6E1B1B",
-    color: result ? "#1A8917" : "#FFF5F5",
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: "500",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    gap: "6px",
-    cursor: "pointer"
-  };
-
-  const iconStyle: React.CSSProperties = {
-    width: "16px",
-    height: "16px",
-  };
-
-  const modalOverlayStyle: React.CSSProperties = {
-    position: "fixed" as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    display: showModal ? "flex" : "none",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000
-  };
-
-  const modalStyle: React.CSSProperties = {
-    backgroundColor: "#2F3336",
-    borderRadius: "16px",
-    padding: "20px",
-    maxWidth: "400px",
-    width: "90%",
-    color: "white",
-    position: "relative" as const,
-    zIndex: 1001
-  };
-
-  const modalContentStyle = {
-    marginTop: "12px",
-    fontSize: "14px",
-    lineHeight: "1.5"
-  };
+const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
+  const [showModal, setShowModal] = useState(false)
 
   const handleFlagClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowModal(true);
-  };
+    e.stopPropagation()
+    setShowModal(true)
+  }
 
   const handleModalClose = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      setShowModal(false);
+      setShowModal(false)
     }
-  };
+  }
 
-  // If result is true or null/undefined, don't render anything
-  if (result) {
-    return null;
+  const [isLoading, setIsLoading] = useState(true)
+
+  const [claims, setClaims] = useState<
+    Awaited<FactCheckFlagProps["promise"]>["claims"]
+  >([])
+  const [isMisleading, setIsMisleading] = useState<boolean | null>(false)
+
+  useEffect(() => {
+    promise
+      .then((result) => {
+        console.log("✅ Analysis complete:", {
+          tweetId,
+          claimsCount: !result.claims ? 0 : result.claims.length,
+          isMisleading: result.final_decision
+        })
+
+        setIsLoading(false)
+        setClaims(result.claims)
+        setIsMisleading(result.final_decision)
+      })
+      .catch((e) => {
+        console.error("❌ Analysis failed:", {
+          tweetId,
+          error: e.message
+        })
+      })
+  }, [])
+
+  if (isLoading) {
+    return (
+      <Button className="mt-4 mb-2 w-full" disabled>
+        Loading...
+      </Button>
+    )
+  }
+
+  if (isMisleading === null || claims.length === 0) {
+    return null
   }
 
   return (
     <>
-      <div className="fact-check-flag" style={style} onClick={handleFlagClick}>
-        <svg style={iconStyle} viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zm0-11a.75.75 0 01.75.75v4a.75.75 0 01-1.5 0v-4A.75.75 0 018 3.5zM8 10a1 1 0 100 2 1 1 0 000-2z"/>
+      <Button
+        variant={isMisleading ? "destructive" : "success"}
+        className="w-full mt-4 mb-2"
+        onClick={handleFlagClick}>
+        <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zm0-11a.75.75 0 01.75.75v4a.75.75 0 01-1.5 0v-4A.75.75 0 018 3.5zM8 10a1 1 0 100 2 1 1 0 000-2z" />
         </svg>
-        Flagged as Misinformation
-      </div>
+        {!isMisleading ? "Evidence Supports Claims" : "Possible Misinformation"}
+      </Button>
 
-      {showModal && (
-        <div style={modalOverlayStyle} onClick={handleModalClose}>
-          <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "600" }}>
-              {result ? "Verification Details" : "False Claims"}
-            </h3>
-            <div style={modalContentStyle}>
-              {claims ? (
-                claims.map((claim, index) => (
-                  <div key={index} className="mb-6 last:mb-0">
-                    <p className="font-medium mb-2">{claim.claim}</p>
-                    <p className="text-[14px] mb-2">{claim.explanation}</p>
-                    {claim.sources.length > 0 && (
-                      <div className="text-[12px] text-neutral-400">
-                        <p className="mb-1">Sources:</p>
-                        <ul className="list-disc pl-4">
-                          {claim.sources.map((source, idx) => (
-                            <li key={idx}>
-                              <a 
-                                href={source} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="hover:underline"
-                              >
-                                {source}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Deeper Dive</DialogTitle>
+          </DialogHeader>
+
+          <ScrollArea className="max-h-[60vh] pr-4">
+            {(claims || []).map((claim, index) => (
+              <div
+                key={index}
+                className="mb-6 last:mb-0 w-full text-ellipsis overflow-hidden">
+                <div className="flex justify-start">
+                  <p className="font-medium mb-2">
+                    <b>Claim: </b>
+                    {claim.claim}
+                  </p>
+                </div>
+                <p className="text-sm mb-2">{claim.explanation}</p>
+                {claim.sources.length > 0 && (
+                  <div className="text-sm text-muted-foreground">
+                    <p className="mb-1">Sources:</p>
+                    <ul className="list-disc pl-4 space-y-1">
+                      {claim.sources.map((source, idx) => (
+                        <li key={idx}>
+                          <a
+                            href={source}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline break-all">
+                            {source}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                ))
-              ) : (
-                result ? (
-                  "This information has been verified by trusted sources."
-                ) : (
-                  <>
-                    <p style={{ margin: "0 0 12px 0" }}>This claim has been marked as false.</p>
-                    <p style={{ margin: 0 }}>Additional context: This is a misrepresentation of the facts. Please refer to reliable sources for accurate information.</p>
-                  </>
-                )
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-};
+                )}
+              </div>
+            ))}
+          </ScrollArea>
 
-export default FactCheckFlag; 
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowModal(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
+export default FactCheckFlag
