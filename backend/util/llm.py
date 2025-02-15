@@ -10,6 +10,9 @@ load_dotenv()
 GROQ_API_KEY = os.environ["GROQ_API_KEY"]
 PPLX_API_KEY = os.environ["PPLX_API_KEY"]
 
+print(GROQ_API_KEY)
+print(PPLX_API_KEY)
+
 groq_client = Groq(api_key=GROQ_API_KEY)
 
 

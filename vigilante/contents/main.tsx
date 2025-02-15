@@ -1,13 +1,12 @@
 import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { extractTweetDataFromElement } from "../utils/extractTweetData";
-import { simulateAPICall } from "../utils/api";
+import { sendToBackground } from "@plasmohq/messaging";
 import FactCheckFlag from "../components/FactCheckFlag";
 
 const ContentScript = () => {
   useEffect(() => {
     const processedTweets = new WeakSet<Element>();
-
     const observerOptions = {
       root: null,
       rootMargin: "600px",
@@ -16,38 +15,42 @@ const ContentScript = () => {
 
     const tweetObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          if (!processedTweets.has(entry.target)) {
+        if (entry.isIntersecting && !processedTweets.has(entry.target)) {
+          const processTweet = async () => {
+            // Extract and log tweet data
             const tweetData = extractTweetDataFromElement(entry.target);
             console.log("Pre-fetched tweet data:", tweetData);
 
-            // Find the metrics bar container
-            const metricsBar = entry.target.querySelector('[role="group"]');
-            
-            if (metricsBar) {
-              simulateAPICall()
-                .then((result) => {
-                  // Create wrapper div for proper positioning
-                  const wrapper = document.createElement("div");
-                  wrapper.style.width = "100%";
-                  wrapper.style.marginTop = "8px";
-                  wrapper.style.borderTop = "1px solid rgb(239, 243, 244)";
-                  wrapper.style.paddingTop = "12px";
-                  
-                  // Insert wrapper after the metrics bar
-                  metricsBar.parentNode?.insertBefore(wrapper, metricsBar.nextSibling);
-                  
-                  const root = createRoot(wrapper);
-                  root.render(<FactCheckFlag result={result} />);
-                  
-                  console.log("Flag component appended with result:", result);
-                })
-                .catch((error) => {
-                  console.error("Error in fact-checking API call:", error);
-                });
-              processedTweets.add(entry.target);
+            try {
+              // Add extra logging before sending the message
+              console.log("Sending tweet data to background with name 'analyze'...", tweetData);
+              const result = await sendToBackground({
+                name: "analyze",
+                body: tweetData,
+              });
+              console.log("Received background response:", result);
+
+              // Create a container element for the fact-check flag.
+              const flagContainer = document.createElement("div");
+              flagContainer.className = "fact-check-flag-container";
+
+              // Render the FactCheckFlag component using React 18's createRoot.
+              const root = createRoot(flagContainer);
+              root.render(<FactCheckFlag result={result} />);
+
+              // Append the flag container to the tweet element.
+              entry.target.appendChild(flagContainer);
+              console.log("Flag component appended with result:", result);
+            } catch (error) {
+              console.error("Error in fact-checking API call:", error);
             }
-          }
+
+            processedTweets.add(entry.target);
+            observer.unobserve(entry.target);
+          };
+
+          processTweet();
+        } else {
           observer.unobserve(entry.target);
         }
       });
@@ -85,6 +88,6 @@ const ContentScript = () => {
   }, []);
 
   return null;
-}
+};
 
 export default ContentScript;
