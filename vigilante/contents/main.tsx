@@ -38,7 +38,7 @@ const ContentScript = () => {
               });
 
               const result = await sendToBackground({
-                name: "analyze",
+                name: "analyze", 
                 body: tweetData,
               });
 
@@ -48,17 +48,27 @@ const ContentScript = () => {
                 isMisleading: result.final_decision
               });
 
-              // Create and append flag component
-              const flagContainer = document.createElement("div");
-              flagContainer.className = "fact-check-flag-container";
-              const root = createRoot(flagContainer);
-              root.render(<FactCheckFlag result={!result.final_decision} />);
-              entry.target.appendChild(flagContainer);
-              
-              console.log("🏁 Flag component rendered:", {
-                tweetId: result.tweet_id,
-                success: true
-              });
+              // Find metrics bar and insert flag component
+              const metricsBar = entry.target.querySelector('[role="group"]');
+              if (metricsBar) {
+                // Create wrapper div for proper positioning
+                const wrapper = document.createElement("div");
+                wrapper.style.width = "100%";
+                wrapper.style.marginTop = "8px";
+                wrapper.style.borderTop = "1px solid rgb(239, 243, 244)";
+                wrapper.style.paddingTop = "12px";
+
+                // Insert wrapper after metrics bar
+                metricsBar.parentNode?.insertBefore(wrapper, metricsBar.nextSibling);
+
+                const root = createRoot(wrapper);
+                root.render(<FactCheckFlag result={!result.final_decision} claims={result.claims} />);
+
+                console.log("🏁 Flag component rendered:", {
+                  tweetId: result.tweet_id,
+                  success: true
+                });
+              }
             } catch (error) {
               console.error("❌ Analysis failed:", {
                 tweetId: tweetData.id,
@@ -67,6 +77,7 @@ const ContentScript = () => {
             }
 
             processedTweets.add(entry.target);
+            
             observer.unobserve(entry.target);
           };
 
