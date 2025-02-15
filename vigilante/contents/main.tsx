@@ -6,8 +6,8 @@ import { sendToBackground } from "@plasmohq/messaging"
 
 import FactCheckFlag from "~components/FactCheckFlag"
 
-import { extractTweetDataFromElement } from "../utils/extractTweetData"
 import { getCachedAnalysis, setCachedAnalysis } from "../utils/cache"
+import { extractTweetDataFromElement } from "../utils/extractTweetData"
 
 const ContentScript = () => {
   useEffect(() => {
@@ -38,12 +38,7 @@ const ContentScript = () => {
               hasMedia: tweetData.media.length > 0
             })
 
-            // Check cache first
-            const cachedResult = await getCachedAnalysis(tweetData.id)
-            if (cachedResult) {
-              console.log("📦 Using cached analysis for tweet:", tweetData.id)
-              return cachedResult
-            }
+            let promise: Promise<any>
 
             // Skip video tweets with short text
             if (
@@ -59,13 +54,20 @@ const ContentScript = () => {
               timestamp: new Date().toISOString()
             })
 
-            const promise = sendToBackground({
-              name: "analyze",
-              body: tweetData
-            })
+            // Check cache first
+            const cachedResult = await getCachedAnalysis(tweetData.id)
+            if (cachedResult) {
+              console.log("📦 Using cached analysis for tweet:", tweetData.id)
+              promise = Promise.resolve(cachedResult)
+            } else {
+              promise = sendToBackground({
+                name: "analyze",
+                body: tweetData
+              })
+            }
 
             // Cache the result when promise resolves
-            promise.then(result => {
+            promise.then((result) => {
               setCachedAnalysis(tweetData.id, result)
             })
 
