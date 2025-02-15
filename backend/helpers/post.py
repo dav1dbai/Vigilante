@@ -35,7 +35,13 @@ def evaluate_claims_in_post(author: str, content: str):
     evaluations = []
 
     def process_claim(claim):
-        sources, explanation, is_misleading = analyze_claim(content, claim)
+        result = analyze_claim(content, claim)
+
+        if result is None:
+            return None
+
+        sources, explanation, is_misleading = result
+
         return {
             "claim": claim,
             "sources": sources,
@@ -44,11 +50,14 @@ def evaluate_claims_in_post(author: str, content: str):
         }
 
     with ThreadPoolExecutor() as executor:
-        futures = {executor.submit(process_claim, claim): claim for claim in claims}
+        futures = {executor.submit(process_claim, claim)
+                                   : claim for claim in claims}
 
         for future in as_completed(futures):
             try:
-                evaluations.append(future.result())
+                result = future.result()
+                if result is not None:
+                    evaluations.append(result)
             except Exception as e:
                 print(f"Error processing claim {futures[future]}: {e}")
 
@@ -110,16 +119,18 @@ def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp, sa
                             ]
                         }
                     ]
-                    
+
                     # Get image caption
-                    image_caption = call_groq(image_message, model="llama-3.2-11b-vision-preview")["content"]
+                    image_caption = call_groq(
+                        image_message, model="llama-3.2-11b-vision-preview")["content"]
                     print("image_caption", image_caption)
                     # Combine tweet text with image caption for claim evaluation
                     combined_content = f"{tweet_text}\n[Image content: {image_caption}]"
                     claim_results = evaluate_claims_in_post(
                         author=tweet_author, content=combined_content)
                 except Exception as e:
-                    print(f"Error processing image for tweet {tweet_id}: {str(e)}")
+                    print(
+                        f"Error processing image for tweet {tweet_id}: {str(e)}")
                     claim_results = evaluate_claims_in_post(
                         author=tweet_author, content=tweet_text)
             else:

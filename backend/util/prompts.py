@@ -52,3 +52,9 @@ Does this statement make researchable claims?
 
 ONLY respond YES or NO. Do not respond with anything else.
 """
+
+IS_CONTROVERSIAL_PROMPT = """\
+Is this claim controversial/disputable?
+
+ONLY respond YES or NO. Do not respond with anything else.
+"""
