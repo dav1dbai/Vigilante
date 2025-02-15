@@ -21,6 +21,8 @@
     "plasmo": "0.90.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-markdown": "^7.1.2",
+    "remark-gfm": "^2.0.0",
     "tailwind-merge": "^3.0.1",
     "tailwindcss": "3.4.14",
     "tailwindcss-animate": "^1.0.7"

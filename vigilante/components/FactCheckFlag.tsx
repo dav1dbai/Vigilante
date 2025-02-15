@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react"
 
+import TextFormat from "./TextFormat"
 import { Button } from "./ui/button"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-  DialogDescription
+  DialogTitle
 } from "./ui/dialog"
 import { ScrollArea } from "./ui/scroll-area"
 
@@ -85,14 +86,17 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
         variant={isMisleading ? "destructive" : "success"}
         className="w-full mt-4 mb-2 transition-all duration-200 hover:scale-102 hover:shadow-md active:scale-98"
         onClick={handleFlagClick}>
-        <svg className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12" viewBox="0 0 16 16" fill="currentColor">
+        <svg
+          className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12"
+          viewBox="0 0 16 16"
+          fill="currentColor">
           <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zm0-11a.75.75 0 01.75.75v4a.75.75 0 01-1.5 0v-4A.75.75 0 018 3.5zM8 10a1 1 0 100 2 1 1 0 000-2z" />
         </svg>
         {!isMisleading ? "Evidence Supports Claims" : "Possible Misinformation"}
       </Button>
 
       <Dialog open={showModal} onOpenChange={handleModalClose}>
-        <DialogContent 
+        <DialogContent
           className="max-h-[80vh] bg-zinc-950 border-zinc-800 transform duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=open]:slide-in-from-left-1/2"
           onOpenAutoFocus={(e) => {
             e.preventDefault()
@@ -117,32 +121,35 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea 
+          <ScrollArea
             className="max-h-[60vh] pr-4"
             onScrollCapture={(e) => e.stopPropagation()}>
             {(claims || []).map((claim, index) => (
               <div
                 key={index}
                 className={`mb-6 last:mb-0 w-full border rounded-lg p-4 transition-all duration-200 hover:shadow-md bg-zinc-900 ${
-                  claim.is_misleading ? 'border-red-800' : 'border-green-800'
+                  claim.is_misleading ? "border-red-800" : "border-green-800"
                 }`}>
                 <div
                   onClick={() => {
-                    const content = document.getElementById(`claim-content-${index}`)
+                    const content = document.getElementById(
+                      `claim-content-${index}`
+                    )
                     const arrow = document.getElementById(`arrow-${index}`)
                     if (content) {
-                      content.classList.toggle('max-h-0')
-                      content.classList.toggle('max-h-[500px]')
-                      content.classList.toggle('opacity-0')
-                      content.classList.toggle('opacity-100')
+                      content.classList.toggle("max-h-0")
+                      content.classList.toggle("max-h-[500px]")
+                      content.classList.toggle("opacity-0")
+                      content.classList.toggle("opacity-100")
                     }
-                    arrow?.classList.toggle('rotate-180')
+                    arrow?.classList.toggle("rotate-180")
                   }}
                   className="w-full text-left cursor-pointer">
                   <div className="flex items-center justify-between">
-                    <p className={`font-medium transition-colors duration-200 ${
-                      claim.is_misleading ? 'text-red-400' : 'text-green-400'
-                    }`}>
+                    <p
+                      className={`font-medium transition-colors duration-200 ${
+                        claim.is_misleading ? "text-red-400" : "text-green-400"
+                      }`}>
                       <b>Claim: </b>
                       {claim.claim}
                     </p>
@@ -161,11 +168,13 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
                     </svg>
                   </div>
                 </div>
-                
-                <div 
-                  id={`claim-content-${index}`} 
+
+                <div
+                  id={`claim-content-${index}`}
                   className="max-h-0 opacity-0 overflow-hidden mt-4 transition-all duration-300 ease-in-out">
-                  <p className="text-sm mb-4 text-zinc-300">{claim.explanation}</p>
+                  <p className="text-sm mb-4 text-zinc-300">
+                    <TextFormat text={claim.explanation} />
+                  </p>
                   {claim.sources.length > 0 && (
                     <div className="text-sm text-zinc-400">
                       <p className="mb-2">Sources:</p>
@@ -176,7 +185,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
                             href={source}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-block px-3 py-1 bg-zinc-800 rounded-md transition-all duration-200 hover:bg-zinc-700 hover:scale-105 hover:shadow-sm active:scale-95 text-zinc-300">
+                            className="inline-block px-3 py-1 bg-zinc-800 rounded-md transition-all duration-200 hover:bg-zinc-700 hover:shadow-sm text-zinc-300">
                             [{idx + 1}] {new URL(source).hostname}
                           </a>
                         ))}
@@ -189,8 +198,8 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
           </ScrollArea>
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowModal(false)}
               className="transition-all duration-200 hover:scale-105 active:scale-95 bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-200">
               Close
