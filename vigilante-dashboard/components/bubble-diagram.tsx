@@ -17,7 +17,7 @@ const BubbleDiagram = ({ data }: { data: [string, number][] }) => {
 
 
   return (
-    <div style={{ height: 500 }}>
+    <div style={{ height: 500 , fontFamily: 'Poppins' }}>
       <ResponsiveCirclePacking
         data={{
           name: "root",
@@ -29,7 +29,7 @@ const BubbleDiagram = ({ data }: { data: [string, number][] }) => {
         colors={(node) => colorScale(node.value)}
 
         padding={4}
-        labelTextColor="#F5F5F5"  // Changed to white
+        labelTextColor="#4B4B4A"  // Changed to white
 
         //labelTextColor={{ from: "color", modifiers: [["darker", 2]] }}
         borderColor={{ from: "color", modifiers: [["darker", 0.3]] }}
