@@ -8,7 +8,6 @@ const TextFormat = ({ text }) => {
     let citationGroup = []
 
     parts.forEach((part, index) => {
-      console.log(part)
       if (/\[\d+\]/.test(part)) {
         // If it's a citation, add it to the citation group
         citationGroup.push(part.replace(/[\[\]]/g, ""))

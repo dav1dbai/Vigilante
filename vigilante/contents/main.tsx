@@ -28,105 +28,121 @@ const ContentScript = () => {
       threshold: 0
     }
 
-    const tweetObserver = new IntersectionObserver(async (entries, observer) => {
-      // Get current settings
-      const isEnabled = await storage.get<boolean>("vigilante-enabled")
-      const semanticFilter = await storage.get<string>("vigilante-semantic-filter")
-      const excludedKeywords = await storage.get<string>("vigilante-excluded-keywords")
+    const tweetObserver = new IntersectionObserver(
+      async (entries, observer) => {
+        // Get current settings
+        const isEnabled = await storage.get<boolean>("vigilante-enabled")
+        const semanticFilter = await storage.get<string>(
+          "vigilante-semantic-filter"
+        )
+        const excludedKeywords = await storage.get<string>(
+          "vigilante-excluded-keywords"
+        )
 
-      // Skip processing if extension is disabled
-      if (!isEnabled) {
-        return
-      }
+        // Skip processing if extension is disabled
+        if (!isEnabled) {
+          return
+        }
 
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && !processedTweets.has(entry.target)) {
-          const processTweet = async () => {
-            // Extract tweet data
-            const tweetData = extractTweetDataFromElement(entry.target)
-            
-            // Apply keyword exclusion filter
-            if (excludedKeywords) {
-              const keywords = excludedKeywords.toLowerCase().split(',').map(k => k.trim())
-              const tweetText = tweetData.text.toLowerCase()
-              if (keywords.some(keyword => tweetText.includes(keyword))) {
-                console.log("⏭️ Skipping tweet due to excluded keywords ", keywords, tweetData.id)
-                entry.target.remove()
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !processedTweets.has(entry.target)) {
+            const processTweet = async () => {
+              // Extract tweet data
+              const tweetData = extractTweetDataFromElement(entry.target)
+
+              // Apply keyword exclusion filter
+              if (excludedKeywords) {
+                const keywords = excludedKeywords
+                  .toLowerCase()
+                  .split(",")
+                  .map((k) => k.trim())
+                const tweetText = tweetData.text.toLowerCase()
+                if (keywords.some((keyword) => tweetText.includes(keyword))) {
+                  console.log(
+                    "⏭️ Skipping tweet due to excluded keywords ",
+                    keywords,
+                    tweetData.id
+                  )
+                  entry.target.remove()
+                  return
+                }
+              }
+
+              // Apply semantic filter (dummy implementation for now)
+              // if (semanticFilter) {
+              //   const isRelevant = await isSemanticallyRelevant(tweetData.text, semanticFilter)
+              //   if (!isRelevant) {
+              //     console.log("⏭️ Skipping tweet due to semantic filter:", semanticFilter, tweetData.id)
+              //     entry.target.remove()
+              //     return
+              //   }
+              // }
+
+              console.log("�� Tweet Detection:", {
+                id: tweetData.id,
+                text: tweetData.text.substring(0, 50) + "...",
+                hasMedia: tweetData.media.length > 0
+              })
+
+              let promise: Promise<any>
+
+              // Skip video tweets with short text
+              if (
+                tweetData.media.some((media) =>
+                  media.includes("video_thumb")
+                ) &&
+                tweetData.text.length < 20
+              ) {
+                console.log("⏭️ Skipping video tweet:", tweetData.id)
                 return
               }
-            }
 
-            // Apply semantic filter (dummy implementation for now)
-            // if (semanticFilter) {
-            //   const isRelevant = await isSemanticallyRelevant(tweetData.text, semanticFilter)
-            //   if (!isRelevant) {
-            //     console.log("⏭️ Skipping tweet due to semantic filter:", semanticFilter, tweetData.id)
-            //     entry.target.remove()
-            //     return
-            //   }
-            // }
-
-            console.log("�� Tweet Detection:", {
-              id: tweetData.id,
-              text: tweetData.text.substring(0, 50) + "...",
-              hasMedia: tweetData.media.length > 0
-            })
-
-            let promise: Promise<any>
-
-            // Skip video tweets with short text
-            if (
-              tweetData.media.some((media) => media.includes("video_thumb")) &&
-              tweetData.text.length < 20
-            ) {
-              console.log("⏭️ Skipping video tweet:", tweetData.id)
-              return
-            }
-
-            console.log("🔄 Analyzing tweet:", {
-              id: tweetData.id,
-              timestamp: new Date().toISOString()
-            })
-
-            // Check cache first
-            const cachedResult = await getCachedAnalysis(tweetData.id)
-            if (cachedResult) {
-              console.log("📦 Using cached analysis for tweet:", tweetData.id)
-              promise = Promise.resolve(cachedResult)
-            } else {
-              promise = sendToBackground({
-                name: "analyze",
-                body: tweetData
+              console.log("🔄 Analyzing tweet:", {
+                id: tweetData.id,
+                timestamp: new Date().toISOString()
               })
+
+              // Check cache first
+              const cachedResult = await getCachedAnalysis(tweetData.id)
+              if (cachedResult) {
+                console.log("📦 Using cached analysis for tweet:", tweetData.id)
+                promise = Promise.resolve(cachedResult)
+              } else {
+                promise = sendToBackground({
+                  name: "analyze",
+                  body: tweetData
+                })
+              }
+
+              // Cache the result when promise resolves
+              promise.then((result) => {
+                setCachedAnalysis(tweetData.id, result)
+              })
+
+              // Find metrics bar and insert flag component
+              const metricsBar = entry.target.querySelector('[role="group"]')
+              if (metricsBar) {
+                const mountPoint = document.createElement("div")
+                metricsBar.parentNode?.insertBefore(mountPoint, metricsBar)
+
+                createRoot(mountPoint).render(
+                  <FactCheckFlag tweetId={tweetData.id} promise={promise} />
+                )
+              }
+
+              processedTweets.add(entry.target)
+
+              observer.unobserve(entry.target)
             }
 
-            // Cache the result when promise resolves
-            promise.then((result) => {
-              setCachedAnalysis(tweetData.id, result)
-            })
-
-            // Find metrics bar and insert flag component
-            const metricsBar = entry.target.querySelector('[role="group"]')
-            if (metricsBar) {
-              const mountPoint = document.createElement("div")
-              metricsBar.parentNode?.insertBefore(mountPoint, metricsBar)
-
-              createRoot(mountPoint).render(
-                <FactCheckFlag tweetId={tweetData.id} promise={promise} />
-              )
-            }
-
-            processedTweets.add(entry.target)
-
+            processTweet()
+          } else {
             observer.unobserve(entry.target)
           }
-
-          processTweet()
-        } else {
-          observer.unobserve(entry.target)
-        }
-      })
-    }, observerOptions)
+        })
+      },
+      observerOptions
+    )
 
     function observeExistingTweets() {
       const tweetArticles = document.querySelectorAll(
@@ -165,10 +181,13 @@ const ContentScript = () => {
 }
 
 // Dummy semantic relevance checker with timeout
-async function isSemanticallyRelevant(tweetText: string, filterTopic: string): Promise<boolean> {
+async function isSemanticallyRelevant(
+  tweetText: string,
+  filterTopic: string
+): Promise<boolean> {
   // Add artificial delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
+  await new Promise((resolve) => setTimeout(resolve, 500))
+
   const response = await sendToBackground({
     name: "semantic",
     body: {
