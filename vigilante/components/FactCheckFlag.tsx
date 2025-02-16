@@ -12,7 +12,7 @@ export type FactCheckFlagProps = {
       claim: string
       sources: string[]
       explanation: string
-      is_misleading: string
+      is_misleading: boolean
     }[]
   }>
 }
@@ -169,19 +169,27 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
     )
   }
 
-  // Only show flag if there are misleading claims
-  if (!claims.some(claim => claim.is_misleading)) {
+  // Only show flag if there are claims
+  if (claims.length === 0) {
     return null
   }
 
-  console.log(showModal, modalPos)
+  const allClaimsVerified = claims.length > 0 && claims.every(claim => !claim.is_misleading)
+
+  console.log(claims, allClaimsVerified)
+  
+  //console.log(showModal, modalPos)
 
   return (
     <div className="relative" ref={containerRef}>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"></link>
       <Button
         variant="destructive"
-        className="w-full mt-4 mb-2 transition-all duration-200 hover:shadow-md active:scale-98 bg-black/5 border border-[#DA4E67]/20 text-[#DA4E67] relative overflow-hidden group"
+        className={`w-full mt-4 mb-2 transition-all duration-200 hover:shadow-md active:scale-98 bg-black/5 border ${
+          allClaimsVerified 
+            ? "border-green-500/20 text-green-500 hover:bg-green-500/10" 
+            : "border-[#DA4E67]/20 text-[#DA4E67] hover:bg-[#DA4E67]/10"
+        } relative overflow-hidden group`}
         onClick={handleFlagClick}>
         <svg
           className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12"
@@ -189,7 +197,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
           fill="currentColor">
           <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zm0-11a.75.75 0 01.75.75v4a.75.75 0 01-1.5 0v-4A.75.75 0 018 3.5zM8 10a1 1 0 100 2 1 1 0 000-2z" />
         </svg>
-        Flagged
+        {allClaimsVerified ? 'Verified' : 'Flagged'}
       </Button>
 
       {showModal &&
