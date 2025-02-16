@@ -25,10 +25,12 @@ export default function LiveTweets() {
 
           const { data } = await supabaseClient
             .from("tweets")
-            .select("original_tweet_id,is_misleading,text")
+            .select("original_tweet_id,text")
             .eq("original_tweet_id", payload.new.original_tweet_id)
             .limit(1)
             .single();
+
+          console.log(data);
 
           const newTweet = {
             id: Math.random().toString(36).substr(2, 9), // Generate random ID for animation
@@ -72,25 +74,21 @@ export default function LiveTweets() {
                   className="mb-4"
                 >
                   <div
-                    className={`
-                    bg-gradient-to-r from-blue-500 to-indigo-600 
-                    rounded-lg p-4 shadow-lg transform transition-all duration-500
-                    hover:scale-105 cursor-pointer
-                  `}
+                    className={"py-4"}
                     style={{
                       fontSize: `${Math.max(0.8, 1.2 - ageRatio * 0.4)}rem`,
-                      maxWidth: `${Math.max(40, 80 - ageRatio * 40)}%`,
                       opacity: Math.max(0.3, 1 - ageRatio * 0.7),
                     }}
                   >
                     <div className="flex items-center space-x-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                      <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
                       <span className="text-xs opacity-75">
                         {Math.floor(age / 1000)}s ago
                       </span>
                     </div>
                     {tweet.text}
                   </div>
+                  <hr />
                 </motion.div>
               );
             })}
