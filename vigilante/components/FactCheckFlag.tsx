@@ -1,4 +1,4 @@
-import React, { MouseEvent, useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState, type MouseEvent } from "react"
 import { createPortal } from "react-dom"
 
 import TextFormat from "./TextFormat"
@@ -29,6 +29,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
 
   // Ref for the modal element, used to measure its height.
   const modalRef = useRef<HTMLDivElement>(null)
+
   // Stores the modal's computed position.
   const [modalPos, setModalPos] = useState<{
     top: number
@@ -90,6 +91,26 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
     }
   }, [showModal])
 
+  // detect clicking outside of modal
+  useEffect(() => {
+    if (!showModal) return
+
+    const handleClickOutside = (event: Event) => {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        closeModal()
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [showModal, setShowModal])
+
   if (isLoading) {
     return (
       <div className="relative" ref={containerRef}>
@@ -99,8 +120,6 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
       </div>
     )
   }
-
-  console.log(showModal, modalPos)
 
   if (
     isMisleading === null ||
@@ -129,6 +148,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
         modalPos &&
         createPortal(
           <div
+            ref={modalRef}
             style={{
               position: "absolute",
               top: modalPos.top,
@@ -189,12 +209,12 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
                     </button>
 
                     <div
-                      className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
+                      className={`transition-all duration-300 ease-in-out overflow-hidden ${
                         activeClaim === index
                           ? "max-h-[500px] opacity-100"
                           : "max-h-0 opacity-0"
                       }`}>
-                      <p className="text-sm mb-4 text-zinc-300">
+                      <p className="text-sm my-4 text-zinc-300">
                         <TextFormat text={claim.explanation} />
                       </p>
                       {claim.sources.length > 0 && (
