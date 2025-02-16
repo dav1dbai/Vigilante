@@ -16,13 +16,13 @@ export default function MostMisinformedTopics({
   );
 
   return (
-    <Card className="w-full max-w-3xl flex-1">
-      <ScrollArea className="min-h-full">
+    <Card className="w-full max-w-3xl flex-1 max-h-[300px] overflow-hidden">
+      <ScrollArea className="max-h-auto no-scrollbar">
         <CardHeader className="space-y-2">
           <CardTitle className="font-inter text-2xl text-black">
             Most Misinformed Topics
           </CardTitle>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-md text-muted-foreground">
             Summaries of the three most misinformed topics on X in the past 12
             hours.
           </p>
