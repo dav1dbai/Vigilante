@@ -59,7 +59,7 @@ export default function LiveTweets() {
         </CardHeader>
         <CardContent>
           <AnimatePresence>
-            {tweets.map((tweet, index) => {
+            {tweets.map((tweet) => {
               const age = Date.now() - tweet.timestamp;
               const maxAge = 300000;
               const ageRatio = Math.min(age / maxAge, 1);
