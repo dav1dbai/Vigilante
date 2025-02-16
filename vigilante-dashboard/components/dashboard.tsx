@@ -11,8 +11,15 @@ interface DashboardProps {
 export default function Dashboard({ data }: DashboardProps) {
   return (
     <div className="text-black">
-      <ChordDiagram data={data.chordData} />
-      <BubbleDiagram data={data.bubbleData} />
+      <div className="flex flex-row gap-4">
+        <div className="w-1/2">
+          <BubbleDiagram data={data.bubbleData} />
+          
+        </div>
+        <div className="w-1/2">
+          <ChordDiagram data={data.chordData} />
+        </div>
+      </div>
     </div>
   );
   // const [visualizationData, setVisualizationData] = useState<any>(null);

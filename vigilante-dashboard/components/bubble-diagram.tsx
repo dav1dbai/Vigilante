@@ -13,7 +13,8 @@ const BubbleDiagram = ({ data }: { data: [string, number][] }) => {
   // Here, smaller bubbles will be a light color and larger bubbles a darker color.
   const colorScale = scaleLog<string>()
     .domain([minValue, maxValue])
-    .range(["#96f7e4", "#00786f"]); // Adjust these colors as desired
+    .range(['#F2DD78', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD']);
+
 
   return (
     <div style={{ height: 500 }}>
@@ -26,6 +27,8 @@ const BubbleDiagram = ({ data }: { data: [string, number][] }) => {
         value="value"
         // Use a custom color function that determines the color based on the bubble's value.
         colors={(node) => colorScale(node.value)}
+
+
         padding={4}
         labelTextColor={{ from: "color", modifiers: [["darker", 2]] }}
         borderColor={{ from: "color", modifiers: [["darker", 0.3]] }}
