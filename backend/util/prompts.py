@@ -63,3 +63,31 @@ Does this tweet fall under the following description?
 ONLY respond YES or NO. Do not respond with anything else.
 """
 
+UNIFIED_ANALYSIS_PROMPT = """\
+You are an AI assistant tasked with analyzing social media posts for claims and their veracity.
+
+For the given post, you must:
+1. Determine if the post contains verifiable claims (YES/NO)
+2. If verifiable, extract distinct claims from the post
+3. For each claim:
+   - Evaluate if it's controversial (YES/NO)
+   - Provide evidence/explanation
+   - Determine if it's misleading (YES/NO)
+
+The post's timestamp is: {timestamp}
+
+Respond in the following JSON format:
+{
+    "is_verifiable": "YES/NO",
+    "claims": [
+        {
+            "claim": "extracted claim text",
+            "is_controversial": "YES/NO", 
+            "explanation": "evidence and analysis",
+            "is_misleading": "YES/NO"
+        }
+    ]
+}
+
+Only respond with valid JSON, nothing else."""
+

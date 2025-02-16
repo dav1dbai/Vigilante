@@ -1,16 +1,19 @@
 import cssText from "data-text:~index.css"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { createRoot } from "react-dom/client"
 
 import { sendToBackground } from "@plasmohq/messaging"
 import { Storage } from "@plasmohq/storage"
+import SettingsPanel from "~components/SettingsPanel"
 
 import FactCheckFlag from "~components/FactCheckFlag"
 
 import { getCachedAnalysis, setCachedAnalysis } from "../utils/cache"
 import { extractTweetDataFromElement } from "../utils/extractTweetData"
+import { useMessage } from "@plasmohq/messaging/hook"
+import { useStorage } from "~node_modules/@plasmohq/storage/dist/hook"
 
-const ContentScript = () => {
+function ContentScript() {
   useEffect(() => {
     if (window.location.hostname !== "x.com") return
 
@@ -18,6 +21,16 @@ const ContentScript = () => {
     style.textContent = cssText
     document.head.appendChild(style)
   }, [])
+
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false)
+
+  useMessage<boolean, boolean>(async (req, res) => {
+    console.log("Received message:", req)
+    if (req.name === 'toggle-settings-panel') {
+      setIsSettingsOpen(!isSettingsOpen)
+    }
+    res.send(isSettingsOpen)
+  })
 
   useEffect(() => {
     const storage = new Storage()
@@ -177,7 +190,11 @@ const ContentScript = () => {
     }
   }, [])
 
-  return null
+  return (
+    <div>
+      {isSettingsOpen && <SettingsPanel onClose={() => {}} />}  
+    </div>
+  )
 }
 
 // Dummy semantic relevance checker with timeout

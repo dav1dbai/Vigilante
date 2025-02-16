@@ -32,13 +32,9 @@ groq_client = Groq(api_key=GROQ_API_KEYS[CURRENT_GROQ_API_KEY_INDEX])
 class AllAPIKeysExhaustedError(Exception):
     pass
 
-def call_groq(messages, model="llama-3.2-11b-vision-preview", temperature=0):
+def call_groq(messages, model="llama-3.2-11b-vision-preview", temperature=0, max_retries=3, retry_delay=1):
     """
-    Calls the GROQ API to generate a completion.
-    
-    Maintains a minimum delay between uses of the same API key while allowing immediate
-    switching to other available keys. If all keys are rate-limited or too recently used,
-    raises AllAPIKeysExhaustedError.
+    Calls the GROQ API with retry logic for handling temporary service disruptions.
     """
     global CURRENT_GROQ_API_KEY_INDEX
     global groq_client
@@ -46,6 +42,7 @@ def call_groq(messages, model="llama-3.2-11b-vision-preview", temperature=0):
 
     max_attempts = len(GROQ_API_KEYS)
     attempts = 0
+    last_error = None
     
     while attempts < max_attempts:
         # Try each key in sequence
@@ -59,27 +56,42 @@ def call_groq(messages, model="llama-3.2-11b-vision-preview", temperature=0):
             
         groq_client = Groq(api_key=GROQ_API_KEYS[CURRENT_GROQ_API_KEY_INDEX])
         
-        try:
-            completion = groq_client.chat.completions.create(
-                messages=messages,
-                model=model,
-                stop=None,
-                temperature=temperature,
-            )
-            # Update last used time on successful completion
-            GROQ_KEY_LAST_USED[CURRENT_GROQ_API_KEY_INDEX] = datetime.now()
-            return {
-                "content": completion.choices[0].message.content
-            }
-        except groq.RateLimitError:
-            attempts += 1
-            print(
-                f"Rate limit reached using API key index {CURRENT_GROQ_API_KEY_INDEX}. Trying next key..."
-            )
-        except Exception as exc:
-            # Propagate any exception other than rate limit error
-            raise exc
+        # Add retry logic for 503 errors
+        for retry in range(max_retries):
+            try:
+                completion = groq_client.chat.completions.create(
+                    messages=messages,
+                    model=model,
+                    stop=None,
+                    temperature=temperature,
+                )
+                # Update last used time on successful completion
+                GROQ_KEY_LAST_USED[CURRENT_GROQ_API_KEY_INDEX] = datetime.now()
+                return {
+                    "content": completion.choices[0].message.content
+                }
+            except groq.RateLimitError:
+                attempts += 1
+                print(
+                    f"Rate limit reached using API key index {CURRENT_GROQ_API_KEY_INDEX}. Trying next key..."
+                )
+                break  # Try next API key
+            except groq.InternalServerError as e:
+                last_error = e
+                if "Service Unavailable" in str(e):
+                    if retry < max_retries - 1:
+                        sleep_time = retry_delay * (2 ** retry)  # Exponential backoff
+                        print(f"Groq service unavailable, retrying in {sleep_time} seconds...")
+                        time.sleep(sleep_time)
+                        continue
+                break  # Try next API key if retries exhausted
+            except Exception as exc:
+                # Propagate any other exception
+                raise exc
 
+    # If we've exhausted all keys and retries
+    if last_error:
+        raise last_error
     raise AllAPIKeysExhaustedError("All GROQ API keys exhausted due to rate limits or minimum delay requirements.")
 
 
@@ -106,3 +118,12 @@ def call_perplexity(messages, temperature=0):
         "content": completion["choices"][0]["message"]["content"],
         "citations": completion["citations"]
     }
+
+def call_unified_groq(messages, model="llama-3.2-11b-vision-preview"):
+    """Wrapper for unified analysis using GROQ"""
+    try:
+        completion = call_groq(messages, model=model)
+        print(json.loads(completion["content"]))
+        return json.loads(completion["content"])
+    except json.JSONDecodeError:
+        raise Exception("Failed to parse LLM response as JSON")

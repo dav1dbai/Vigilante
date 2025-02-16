@@ -12,7 +12,7 @@ export type FactCheckFlagProps = {
       claim: string
       sources: string[]
       explanation: string
-      is_misleading: boolean
+      is_misleading: string
     }[]
   }>
 }
@@ -40,7 +40,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect()
       setModalPos({
-        top: rect.top + window.scrollY,
+        top: rect.top - 50 + window.scrollY,
         left: rect.right + 8 + window.scrollX
       })
     }
@@ -64,6 +64,20 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
   useEffect(() => {
     if (!showModal) return
 
+    // Create intersection observer to detect when container leaves viewport
+    const intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0].isIntersecting) {
+          closeModal()
+        }
+      },
+      { threshold: 0 }
+    )
+
+    if (containerRef.current) {
+      intersectionObserver.observe(containerRef.current)
+    }
+
     const handleScrollOrResize = () => {
       if (!containerRef.current) {
         closeModal()
@@ -76,20 +90,21 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
     window.addEventListener("resize", handleScrollOrResize)
 
     // Check if ref is lost
-    const observer = new MutationObserver(() => {
+    const mutationObserver = new MutationObserver(() => {
       if (!containerRef.current) {
         closeModal()
       }
     })
 
     if (containerRef.current) {
-      observer.observe(containerRef.current.parentElement!, { childList: true })
+      mutationObserver.observe(containerRef.current.parentElement!, { childList: true })
     }
 
     return () => {
       window.removeEventListener("scroll", handleScrollOrResize)
       window.removeEventListener("resize", handleScrollOrResize)
-      observer.disconnect()
+      intersectionObserver.disconnect()
+      mutationObserver.disconnect()
     }
   }, [showModal])
 
@@ -103,6 +118,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
         })
         setIsLoading(false)
         setClaims(result.claims || [])
+        console.log("claims:", result.claims)
         setIsMisleading(result.final_decision)
       })
       .catch((e) => {
@@ -154,7 +170,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
   }
 
   // Only show flag if there are misleading claims
-  if (!claims.some(claim => claim.is_misleading)) {
+  if (!claims.some(claim => claim.is_misleading === "misleading")) {
     return null
   }
 
@@ -162,9 +178,10 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
 
   return (
     <div className="relative" ref={containerRef}>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"></link>
       <Button
         variant="destructive"
-        className="w-full mt-4 mb-2 transition-all duration-200 hover:scale-102 hover:shadow-md active:scale-98"
+        className="w-full mt-4 mb-2 transition-all duration-200 hover:shadow-md active:scale-98 bg-black/5 border border-[#DA4E67]/20 text-[#DA4E67] relative overflow-hidden group"
         onClick={handleFlagClick}>
         <svg
           className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12"
@@ -172,17 +189,14 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
           fill="currentColor">
           <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13zm0-11a.75.75 0 01.75.75v4a.75.75 0 01-1.5 0v-4A.75.75 0 018 3.5zM8 10a1 1 0 100 2 1 1 0 000-2z" />
         </svg>
-        Possible Misinformation
+        Flagged
       </Button>
 
       {showModal &&
         modalPos &&
         createPortal(
           <>
-            <div 
-              className="fixed inset-0 z-[9998]" 
-              onClick={closeModal}
-            />
+            <div className="fixed inset-0 z-[9998] bg-black/80" onClick={closeModal} />
             <div
               ref={modalRef}
               style={{
@@ -192,73 +206,72 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
               }}
               className="z-[9999]">
               <div 
-                className="bg-zinc-950 border border-zinc-800 max-h-[80vh] w-[350px] overflow-hidden shadow-lg rounded-lg flex flex-col"
+                className="bg-gray-900 max-h-[80vh] w-[400px] overflow-hidden shadow-lg rounded-lg flex flex-col"
                 onClick={(e) => e.stopPropagation()}
               >
-                <header className="p-4">
-                  <h2 className="text-zinc-100 text-lg font-semibold">
-                    Deeper Dive
+                <header className="p-4 border-b border-gray-800">
+                  <h2 className="text-xl font-semibold text-white">
+                    Dive Deeper
                   </h2>
-                  <p className="sr-only">
-                    Detailed analysis of claims and their supporting evidence
+                  <p className="text-gray-400 text-sm mt-1">
+                    {claims.length} claim{claims.length !== 1 ? 's' : ''} analyzed
                   </p>
                 </header>
 
-                <div className="p-4 flex-1 overflow-y-auto">
+                <div className="p-3 flex-1 overflow-y-auto space-y-2">
                   {claims.map((claim, index) => (
                     <div
                       key={index}
-                      className={`mb-6 last:mb-0 w-full border rounded-lg p-4 transition-all duration-200 hover:shadow-md bg-zinc-900 ${
-                        claim.is_misleading
-                          ? "border-red-800"
-                          : "border-green-800"
+                      className={`w-full border rounded-lg p-3 transition-all duration-200 hover:shadow-md ${
+                        claim.is_misleading === "misleading"
+                          ? "border-[#DA4E67]/20 bg-[#DA4E67]/10"
+                          : "border-green-500/20 bg-green-500/10"
                       }`}>
                       <button
-                        onClick={() =>
-                          setActiveClaim((prev) =>
-                            prev === index ? null : index
-                          )
-                        }
+                        onClick={() => setActiveClaim((prev) => prev === index ? null : index)}
                         className="w-full text-left">
-                        <div className="flex items-center justify-between">
-                          <p
-                            className={`font-medium transition-colors duration-200 ${
-                              claim.is_misleading
-                                ? "text-red-400"
-                                : "text-green-400"
-                            }`}>
-                            <b>Claim: </b>
-                            {claim.claim}
-                          </p>
+                        <div className="flex items-start gap-3">
+                          <div className={`mt-1 ${
+                            claim.is_misleading === "misleading" ? "text-[#DA4E67]" : "text-green-500"
+                          }`}>
+                            {claim.is_misleading === "misleading" ? (
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" />
+                              </svg>
+                            ) : (
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+                              </svg>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-white">
+                              {claim.claim}
+                            </p>
+                          </div>
                           <svg
-                            className={`w-5 h-5 transform transition-transform duration-200 text-zinc-400 ${
+                            className={`w-5 h-5 transform transition-transform duration-200 text-gray-400 ${
                               activeClaim === index ? "rotate-180" : ""
                             }`}
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M19 9l-7 7-7-7"
-                            />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                           </svg>
                         </div>
                       </button>
 
                       <div
-                        className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
-                          activeClaim === index
-                            ? "max-h-[500px] opacity-100"
-                            : "max-h-0 opacity-0"
+                        className={`mt-3 transition-all duration-300 ease-in-out overflow-hidden ${
+                          activeClaim === index ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
                         }`}>
-                        <div className="text-sm mb-4 text-zinc-300">
+                        <div className="text-sm mb-3 text-gray-300">
                           <TextFormat text={claim.explanation} />
                         </div>
                         {claim.sources.length > 0 && (
-                          <div className="text-sm text-zinc-400">
-                            <p className="mb-2">Sources:</p>
+                          <div className="text-sm">
+                            <p className="mb-2 text-gray-400">Sources:</p>
                             <div className="flex flex-wrap gap-2">
                               {claim.sources.map((source, idx) => (
                                 <a
@@ -266,7 +279,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
                                   href={source}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-block px-3 py-1 bg-zinc-800 rounded-md transition-all duration-200 hover:bg-zinc-700 hover:shadow-sm text-zinc-300">
+                                  className="inline-block px-3 py-1.5 bg-gray-800 rounded-md transition-all duration-200 hover:bg-gray-700 text-gray-300 text-sm">
                                   [{idx + 1}] {new URL(source).hostname}
                                 </a>
                               ))}
@@ -278,8 +291,11 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
                   ))}
                 </div>
 
-                <footer className="p-4">
-                  <Button variant="outline" onClick={closeModal}>
+                <footer className="p-3 border-t border-gray-800">
+                  <Button 
+                    variant="outline" 
+                    onClick={closeModal} 
+                    className="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 border-gray-700">
                     Close
                   </Button>
                 </footer>
