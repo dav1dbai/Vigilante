@@ -1,5 +1,6 @@
 import Dashboard from "@/components/dashboard";
 import prepareData from "./api/prepare-data";
+import FloatingTweetStream from '../components/realtime_tweets';
 
 export default async function Home() {
   // Define the fake data here

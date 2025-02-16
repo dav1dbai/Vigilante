@@ -47,7 +47,7 @@ const handler: PlasmoMessaging.MessageHandler = async (req, res) => {
 
   try {
     // TODO: Make this dynamic
-    const API_URL = process.env.FASTAPI_URL || "http://localhost:8000";
+    const API_URL = "http://localhost:8000";
     console.log("Sending payload to FastAPI:", payload, "at", API_URL + '/analyze_tweet');
     const apiResponse = await fetch(API_URL + '/analyze_tweet', {
       method: "POST",

@@ -41,7 +41,7 @@ export default function AnalyticsPage() {
     async function fetchSummary() {
       try {
         const resp = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_BASE}/analytics/summary`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/analytics/summary`
         );
         setSummary(resp.data);
       } catch (error) {
@@ -85,6 +85,9 @@ export default function AnalyticsPage() {
       <h1 className="text-2xl font-bold mb-4">Analytics Summary</h1>
       <div className="max-w-sm">
         <Bar data={chartData} options={options} />
+      </div>
+      <div>
+        <FloatingTweetStream />
       </div>
       <div className="mt-4 space-y-2">
         <p><strong>Total Tweets:</strong> {summary.total_tweets}</p>

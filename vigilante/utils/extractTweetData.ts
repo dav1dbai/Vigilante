@@ -144,5 +144,7 @@ export function extractTweetDataFromElement(article: Element): TweetMetadata {
     type,
   };
 
+  console.log("🔍 Extracted tweet data:", tweetData);
+
   return tweetData;
 } 
