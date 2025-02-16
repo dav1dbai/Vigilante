@@ -1,10 +1,4 @@
-import React, {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type MouseEvent
-} from "react"
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
 import TextFormat from "./TextFormat"
@@ -90,8 +84,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
     }
   }, [showModal])
 
-  const handleFlagClick = (e: MouseEvent) => {
-    e.stopPropagation()
+  const handleFlagClick = () => {
     // Dispatch a custom event so that other instances close theirs.
     window.dispatchEvent(
       new CustomEvent("factCheckModalOpen", {
@@ -161,9 +154,10 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
     )
   }
 
+  console.log(showModal, modalPos)
+
   if (
     isMisleading === null ||
-    isMisleading === false ||
     isMisleading === undefined ||
     claims.length === 0
   ) {
@@ -176,7 +170,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
       <Button
         variant={isMisleading ? "destructive" : "success"}
         className="w-full mt-4 mb-2 transition-all duration-200 hover:scale-102 hover:shadow-md active:scale-98"
-        onClick={(e) => handleFlagClick(e)}>
+        onClick={handleFlagClick}>
         <svg
           className="w-4 h-4 mr-2 transition-transform group-hover:rotate-12"
           viewBox="0 0 16 16"
