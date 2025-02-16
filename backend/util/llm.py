@@ -13,7 +13,7 @@ PPLX_API_KEY = os.environ["PPLX_API_KEY"]
 groq_client = Groq(api_key=GROQ_API_KEY)
 
 
-def call_groq(messages, model="llama-3.2-90b-vision-preview", temperature=0):
+def call_groq(messages, model="llama-3.2-11b-vision-preview", temperature=0):
     completion = groq_client.chat.completions.create(
         messages=messages,
         model=model,
