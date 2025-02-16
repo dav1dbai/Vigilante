@@ -2,6 +2,8 @@ import React, { useEffect } from "react"
 import { createPortal } from "react-dom"
 import { useStorage } from "@plasmohq/storage/hook"
 import { Button } from "~components/ui/button"
+import iconUrl from "../assets/icon.png"
+
 
 type SettingsPanelProps = {
   onClose: () => void
@@ -31,10 +33,19 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <header className="p-4 border-b border-gray-800">
-          <h2 className="text-xl font-semibold text-white">Vigilante Settings</h2>
-          <p className="text-gray-400 text-sm mt-1">
-            Configure how Vigilante analyzes your feed
-          </p>
+          <div className="flex items-center gap-3">
+            <img 
+              src={iconUrl}
+              alt="ghsrtdfb" 
+              className="w-8 h-8"
+            />
+            <div>
+              <h2 className="text-xl font-semibold text-white">Vigilante Settings</h2>
+              <p className="text-gray-400 text-sm mt-1">
+                Configure how Vigilante analyzes your feed
+              </p>
+            </div>
+          </div>
         </header>
 
         <div className="p-4 flex-1 overflow-y-auto space-y-6">
@@ -48,7 +59,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
             </div>
             <button
               onClick={() => setIsEnabled(!isEnabled)}
-              className={`relative w-12 h-6 transition-colors rounded-full ${
+              className={`relative w-[3.15rem] h-6 transition-colors rounded-full ${
                 isEnabled ? "bg-green-600" : "bg-red-800"
               }`}
             >
