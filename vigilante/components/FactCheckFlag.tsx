@@ -40,7 +40,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect()
       setModalPos({
-        top: rect.top + window.scrollY,
+        top: rect.top - 50 + window.scrollY,
         left: rect.right + 8 + window.scrollX
       })
     }
