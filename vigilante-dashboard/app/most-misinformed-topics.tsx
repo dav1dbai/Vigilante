@@ -17,7 +17,7 @@ export default function MostMisinformedTopics({
 
   return (
     <Card className="w-full max-w-3xl flex-1 max-h-[300px] overflow-hidden">
-      <ScrollArea className="max-h-auto no-scrollbar">
+      <ScrollArea className="pb-[100px] max-h-full no-scrollbar">
         <CardHeader className="space-y-2">
           <CardTitle className="font-inter text-2xl text-black">
             Most Misinformed Topics
