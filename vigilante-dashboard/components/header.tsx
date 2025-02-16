@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Logo from "../public/logo.svg";
 import { Button } from "./ui/button";
+import Link from "next/link";
 
 export default function Header() {
   return (
@@ -17,9 +18,11 @@ export default function Header() {
             </p>
           </div>
         </div>
-        <Button variant="default" className="text-white">
-          Chrome Extension
-        </Button>
+        <Link target="_blank" href="https://github.com/dav1dbai/Vigilante">
+          <Button variant="default" className="text-white">
+            Chrome Extension
+          </Button>
+        </Link>
       </div>
     </header>
   );

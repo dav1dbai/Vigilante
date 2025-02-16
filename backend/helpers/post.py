@@ -88,11 +88,12 @@ async def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timesta
         "original_tweet_id", tweet_id).execute()
 
     if response.data:
+        print("tweet already analyzed in supabase")
         # Existing analysis retrieval code remains the same:
         analysis_response = supabase_client.table("analyses").select(
             "is_misleading").eq("original_tweet_id", tweet_id).limit(1).single().execute()
 
-        is_misleading = analysis_response.data['is_misleading'] == "misleading"
+        is_misleading =  (analysis_response.data['is_misleading'] == "misleading")
 
         claims_response = supabase_client.table("claims").select(
             "claim,sources,explanation,is_misleading").eq("original_tweet_id", tweet_id).execute()
