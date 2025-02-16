@@ -5,27 +5,13 @@ import type { JSX } from "react";
 import BubbleDiagram from "./charts/bubble-diagram";
 import ChordDiagram from "./charts/chord-diagram";
 import StackedBarDiagram from "./charts/stacked-bar-diagram";
+import LiveTweets from "./live-tweets";
 import MostMisinformedTopics from "./most-misinformed-topics";
 import Stats from "./stats";
 
 interface DashboardProps {
   data: Keyword[];
 }
-
-// return (
-//   <div className="text-black">
-//     <div className="flex flex-row gap-4">
-//       <div className="w-1/2">
-//         <BubbleDiagram data={data.bubbleData} />
-//       </div>
-//       <div className="w-1/2">
-//         <ChordDiagram data={data.chordData} />
-//       </div>
-//     </div>
-
-//     <StackedBarDiagram data={data.stackedBarData} />
-//   </div>
-// );
 
 const tabs: Record<
   string,
@@ -41,7 +27,7 @@ export default function Dashboard({ data }: DashboardProps) {
     <div className="w-full flex-1 min-h-96 flex justify-center pb-8 px-8 overflow-hidden">
       <div className="w-full max-w-8xl flex-1 grid grid-cols-16 gap-8">
         <div className="col-span-6 space-y-8 flex flex-col min-h-full">
-          <div className="w-full bg-white border rounded-lg h-64 shrink-0"></div>
+          <LiveTweets />
           <MostMisinformedTopics keywords={data} />
         </div>
         <div className="col-span-10 gap-8 flex flex-col">

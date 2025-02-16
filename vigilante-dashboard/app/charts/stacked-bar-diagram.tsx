@@ -23,7 +23,7 @@ const Chart = ({ data }: { data: BarDatum[] }) => {
         data={data}
         keys={calculateKeys(data)}
         indexBy="hour"
-        margin={{ top: 0, right: 50, bottom: 60, left: 50 }}
+        margin={{ top: 0, right: 50, bottom: 60, left: 60 }}
         padding={0.3}
         groupMode="stacked"
         axisBottom={{
@@ -40,6 +40,7 @@ const Chart = ({ data }: { data: BarDatum[] }) => {
           tickRotation: 0,
           legend: "Count",
           legendPosition: "middle",
+          legendOffset: -40,
         }}
         colors={{ scheme: "nivo" }}
         borderWidth={1}
