@@ -93,8 +93,6 @@ export default function LiveTweets() {
                 <AnimatePresence>
                   {tweets.map((tweet) => {
                     const age = Date.now() - tweet.timestamp;
-                    const maxAge = 300000;
-                    const ageRatio = Math.min(age / maxAge, 1);
 
                     return (
                       <motion.div
