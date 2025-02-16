@@ -51,7 +51,8 @@ def evaluate_claims_in_post(author: str, content: str):
         }
 
     with ThreadPoolExecutor() as executor:
-        futures = {executor.submit(process_claim, claim): claim for claim in claims}
+        futures = {executor.submit(process_claim, claim)
+                                   : claim for claim in claims}
 
         for future in as_completed(futures):
             try:
@@ -98,39 +99,34 @@ async def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timesta
 
         claim_results = claims_response.data
     else:
-        # New unified analysis:
-        verifiable = is_verifiable(tweet_text)
-        if verifiable:
-            print("verifiable")
-            content = tweet_text  # Initialize content with tweet_text
-            if base64_image:
-                try:
-                    image_message = [
-                        {
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": "Describe the main content of this image, focusing especially on extracting any text."},
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"{base64_image}"
-                                    }
+        content = tweet_text  # Initialize content with tweet_text
+        if base64_image:
+            try:
+                image_message = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Describe the main content of this image, focusing especially on extracting any text."},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"{base64_image}"
                                 }
-                            ]
-                        }
-                    ]
-                    image_caption = call_groq(image_message, model="llama-3.2-11b-vision-preview")["content"]
-                    content = f"{tweet_text}\n[Image content: {image_caption}]"
-                except Exception as e:
-                    print(f"Error processing image for tweet {tweet_id}: {str(e)}")
-                    # content already set to tweet_text, no need to set again
+                            }
+                        ]
+                    }
+                ]
+                image_caption = call_groq(
+                    image_message, model="llama-3.2-11b-vision-preview")["content"]
+                content = f"{tweet_text}\n[Image content: {image_caption}]"
+            except Exception as e:
+                print(f"Error processing image for tweet {tweet_id}: {str(e)}")
+                # content already set to tweet_text, no need to set again
 
-            claim_results = evaluate_claims_in_post(author=tweet_author, content=content)
-            # print("claim_results", claim_results)
-            is_misleading = any(c["is_misleading"] for c in claim_results)
-        else:
-            claim_results = []
-            is_misleading = None
+        claim_results = evaluate_claims_in_post(
+            author=tweet_author, content=content)
+        # print("claim_results", claim_results)
+        is_misleading = any(c["is_misleading"] for c in claim_results)
 
         # Save to Supabase if enabled using asynchronous (batch) submits
         if save_to_supabase:
