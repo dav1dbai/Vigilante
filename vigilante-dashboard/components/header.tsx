@@ -5,14 +5,14 @@ import { Button } from "./ui/button";
 export default function Header() {
   return (
     <header className="">
-      <div className="mx-auto flex h-32 max-w-8xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-24 max-w-8xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center">
-          <div className="relative size-16 rounded-xl mr-4 overflow-hidden">
+          <div className="relative size-12 rounded-xl mr-4 overflow-hidden">
             <Image alt="Logo" src={Logo} fill />
           </div>
           <div className="flex flex-col">
-            <h1 className="text-4xl font-semibold tracking-tight">Vigilante</h1>
-            <p className="text-lg text-muted-foreground">
+            <h1 className="text-2xl font-semibold tracking-tight">Vigilante</h1>
+            <p className="text-md text-muted-foreground">
               Flag Misinformation. Preserve Truth.
             </p>
           </div>
