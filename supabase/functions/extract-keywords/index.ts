@@ -45,6 +45,10 @@ Deno.serve(async (req) => {
   const { record } = await req.json();
   const { original_tweet_id: tweetId, text: tweetText } = record;
 
+  if (!tweetText) {
+    return new Response();
+  }
+
   const chatCompletion = await groqClient.chat.completions.create({
     messages: [
       { role: "system", content: PROMPT },
@@ -54,7 +58,9 @@ Deno.serve(async (req) => {
   });
 
   const content = chatCompletion.choices[0].message.content?.trim();
-  const keywords = content?.split(",") || [];
+  const rawKeywords = content?.split(",") || [];
+
+  const keywords = rawKeywords.map((v) => v.trim());
 
   await supabaseClient
     .from("keywords")
