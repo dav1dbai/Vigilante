@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import { createPortal } from "react-dom"
 import { useStorage } from "@plasmohq/storage/hook"
 import { Button } from "~components/ui/button"
@@ -8,11 +8,15 @@ import iconUrl from "../assets/icon.png"
 type SettingsPanelProps = {
   onClose: () => void
 }
-
 export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const [isEnabled, setIsEnabled] = useStorage<boolean>("vigilante-enabled", true)
   const [semanticFilter, setSemanticFilter] = useStorage<string>("vigilante-semantic-filter", "")
   const [excludedKeywords, setExcludedKeywords] = useStorage<string>("vigilante-excluded-keywords", "")
+
+  useEffect(() => {
+    console.log("isEnabled", isEnabled)
+    setIsEnabled(true)
+  }, [isEnabled])
 
   const content = (
     <div className="fixed inset-0 z-[9998] flex items-start justify-end pt-4 pr-16">

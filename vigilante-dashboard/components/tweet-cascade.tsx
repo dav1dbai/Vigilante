@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import React, { useEffect, useState } from "react";
 import { supabaseClient } from "../lib/supabase";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface Tweet {
   id: string;
@@ -18,6 +18,7 @@ const TweetCascade: React.FC = () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "tweets" },
         (payload) => {
+          console.log(payload);
           const newTweet = {
             id: Math.random().toString(36).substr(2, 9), // Generate random ID for animation
             text: payload.new.text,
@@ -36,17 +37,19 @@ const TweetCascade: React.FC = () => {
   return (
     <div className="fixed inset-0 bg-gradient-to-b from-gray-900 to-black text-white overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-16 bg-gradient-to-b from-gray-900 to-transparent z-10">
-        <h1 className="text-2xl font-bold text-center mt-4">Live Tweet Stream</h1>
+        <h1 className="text-2xl font-bold text-center mt-4">
+          Live Tweet Stream
+        </h1>
       </div>
-      
+
       <div className="h-full overflow-y-auto pt-20 pb-4 px-4">
         <AnimatePresence>
-          {tweets.map((tweet, index) => {
+          {tweets.map((tweet) => {
             // Calculate size and opacity based on position
             const age = Date.now() - tweet.timestamp;
             const maxAge = 300000; // 5 minutes
             const ageRatio = Math.min(age / maxAge, 1);
-            
+
             return (
               <motion.div
                 key={tweet.id}
@@ -56,7 +59,7 @@ const TweetCascade: React.FC = () => {
                 transition={{ duration: 0.5 }}
                 className="mb-4"
               >
-                <div 
+                <div
                   className={`
                     bg-gradient-to-r from-blue-500 to-indigo-600 
                     rounded-lg p-4 shadow-lg transform transition-all duration-500

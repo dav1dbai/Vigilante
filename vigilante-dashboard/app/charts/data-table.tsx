@@ -1,11 +1,18 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ScrollArea } from "./ui/scroll-area"
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface DataTableProps {
   data: {
-    topic: string
-    flaggedTweets: number
-  }[]
+    topic: string;
+    flaggedTweets: number;
+  }[];
 }
 
 export default function DataTable({ data }: DataTableProps) {
@@ -23,13 +30,14 @@ export default function DataTable({ data }: DataTableProps) {
             {data.map((row, index) => (
               <TableRow key={index}>
                 <TableCell className="font-medium">{row.topic}</TableCell>
-                <TableCell className="text-right">{row.flaggedTweets}</TableCell>
+                <TableCell className="text-right">
+                  {row.flaggedTweets}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </ScrollArea>
     </div>
-  )
+  );
 }
-

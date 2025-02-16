@@ -1,15 +1,28 @@
-import Dashboard from "@/components/dashboard";
-import prepareData from "./api/prepare-data";
-import FloatingTweetStream from '../components/realtime_tweets';
+"use client";
 
-export default async function Home() {
+import Header from "@/components/header";
+import useSWR from "swr";
+import getAllKeywordsEntries from "../lib/queries/get-all-keywords-entries";
+
+import LoadingView from "@/components/loading-view";
+import Dashboard from "./dashboard";
+
+export default function Home() {
   // Define the fake data here
-  const data = await prepareData();
+  //const data = await prepareData();
+
+  const { data, isLoading, error } = useSWR("/", getAllKeywordsEntries, {
+    refreshInterval: 5000,
+    revalidateOnFocus: true,
+  });
+
+  console.log(data, isLoading, error);
 
   return (
-    <main className="min-h-screen bg-background text-foreground p-8">
-      <h1 className="text-3xl text-gray-500 font-bold mb-8 text-center">Misinformation Dashboard</h1>
-      <Dashboard data={data} /> 
-    </main>
+    <>
+      <Header />
+      {isLoading && <LoadingView text={"Loading data..."} />}
+      {data && <Dashboard data={data} />}
+    </>
   );
 }
