@@ -76,7 +76,7 @@ def is_verifiable(tweet_text):
         }
     ], model="gemma2-9b-it")
 
-    print(completion["content"])
+    # print(completion["content"])
 
     return completion["content"].strip() == "YES"
 
@@ -98,8 +98,8 @@ def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp, sa
         claim_results = claims_response.data
     else:
         verifiable = is_verifiable(tweet_text)
-        print(tweet_text)
-        print(verifiable)
+        # print(tweet_text)
+        # print(verifiable)
 
         if verifiable:
             if base64_image:
@@ -123,7 +123,7 @@ def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp, sa
                     # Get image caption
                     image_caption = call_groq(
                         image_message, model="llama-3.2-11b-vision-preview")["content"]
-                    print("image_caption", image_caption)
+                    # print("image_caption", image_caption)
                     # Combine tweet text with image caption for claim evaluation
                     combined_content = f"{tweet_text}\n[Image content: {image_caption}]"
                     claim_results = evaluate_claims_in_post(

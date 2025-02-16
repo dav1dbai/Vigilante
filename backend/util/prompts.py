@@ -1,30 +1,24 @@
 EXTRACT_CLAIMS_PROMPT = """\
-Your task is to split a post into a list of claims. The claims must be verifiable (able to be proven true/false).
+Your task is to extract and list significant, verifiable claims from the post provided. Each claim must:
+- Have a clearly identifiable subject (e.g., a named person, organization, or entity).
+- Provide sufficient context so that it can be independently verified.
+- NOT be a trivial or merely descriptive summary of data trends. Avoid claims that only restate observable facts (for example, a simple increase in numbers) unless they include an evaluative judgment, causal assertion, or novel conclusion.
+- NOT be based solely on vague observations, personal anecdotes, or references to unnamed characters.
 
 ONLY respond with the claims, and nothing else. Do NOT number the claims.
+Each claim should appear on a separate line.
 
-Respond with a separate claim on a new line.
+Example Input:
+Author: The Financial Watchdog
+Content: The recent restructuring at the Department of Fisheries resulted in a 50% drop in fish market revenues, raising questions about its management effectiveness.
+Example Output:
+The recent restructuring at the Department of Fisheries resulted in a 50% drop in fish market revenues.
+The significant revenue drop raises concerns about the department's management effectiveness.
 
-IMAGE DESCRIPTIONS ARE NOT CLAIMS. "The woman is wearing a red dress" is not a claim. Something from the image context that could be a claim is extracted text or statements made in the image.
-
-FOCUS ON CLAIMS THAT ARE VERIFIABLE—— claims from broad generalizations, personal anecdotes, opinions, or statements that are not verifiable are not claims. Claims should be searchable and provable—— "the speaker is wrong" is not a valid claim, but "Donald Trump's speech improperly represents the Constitution" is.
-
-## Example Input:
-Author: SWAFF
-Content: We could cure cancer, but we're feedin' our money to defense contractors and foreign gov'ts. and LGBTQ BS #CancerVaccine is our battle cry, showin' how we neglect our health for war. We need to make #MAHA lifestyle the American lifestyle.
-
-## Example Output:
-We could cure cancer.
-Money is being sent to foreign governments and defense contractors instead of cancer research.
-The focus on LGBTQ issues distracts from cancer research and the need for a cancer vaccine.
-The US neglects its health in favor of funding war efforts.
-
-## Example Input:
-Author: Charlie Kirk
-Content: The speed, depth, and power of DOGE has shocked both supporters and critics. I’m surprised and I’m thrilled. It’s fundamentally reshaping the future of what’s possible in government. Historic.
-
-## Example Output:
-The speed, depth, and power of DOGE has shocked both supporters and critics.
+Example Input:
+Author: MarketTrendsDaily
+Content: GDP has increased by 2% over the past year.
+Example Output:
 """
 
 SOURCES_SYSTEM_PROMPT = """\
@@ -38,7 +32,6 @@ Only respond with evidence relating directly to the claim; only use the full tex
 SOURCES_INPUT_PROMPT = """\
 Here is the full text of a post:
 "{post_content}"
-
 
 Find evidence to support or reject this claim (and ONLY this claim) from the post:
 "{claim}".

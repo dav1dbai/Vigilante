@@ -1,5 +1,6 @@
 import Dashboard from "@/components/dashboard";
 import prepareData from "./api/prepare-data";
+import FloatingTweetStream from '../components/realtime_tweets';
 
 export default async function Home() {
   // Define the fake data here
@@ -7,8 +8,8 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-background text-foreground p-8">
-      <h1 className="text-3xl font-bold mb-8">Misinformation Dashboard</h1>
-      <Dashboard data={data} />
+      <h1 className="text-3xl text-gray-500 font-bold mb-8 text-center">Misinformation Dashboard</h1>
+      <Dashboard data={data} /> 
     </main>
   );
 }

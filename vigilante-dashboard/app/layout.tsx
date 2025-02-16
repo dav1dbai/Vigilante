@@ -49,6 +49,9 @@ export default function RootLayout({
               <Link href="/analytics/tweets-by-day" className={`${poppins.className} font-semibold text-white hover:text-gray-300`}>
                 Tweets by Day
               </Link>
+              <Link href="/live" className={`${poppins.className} font-semibold text-white hover:text-gray-300`}>
+                Live
+              </Link>
             </div>
           </nav>
         </header>

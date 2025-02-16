@@ -52,7 +52,7 @@ def analyze_tweet(
            "final_decision": true/false
          }
     """
-    print(f"Analyzing tweet with data: {tweet_id}, {tweet_author}, {tweet_text}")
+    #print(f"Analyzing tweet with data: {tweet_id}, {tweet_author}, {tweet_text}")
     return analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp)
 
 
