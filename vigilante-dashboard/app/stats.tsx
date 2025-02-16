@@ -45,7 +45,7 @@ function StatCard({
               <Skeleton className="w-16 h-9" />
             )}
           </AnimatePresence>
-          <span className="opacity-50 text-lg">{label}</span>
+          <span className="opacity-50 text-md">{label}</span>
         </div>
       </div>
     </Card>
