@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react"
+import React, { MouseEvent, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
 import TextFormat from "./TextFormat"
@@ -25,9 +25,8 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
   >([])
   const [isMisleading, setIsMisleading] = useState<boolean | null>(false)
   const [activeClaim, setActiveClaim] = useState<number | null>(null)
-
-  // Ref for the misinformation banner container.
   const containerRef = useRef<HTMLDivElement>(null)
+
   // Ref for the modal element, used to measure its height.
   const modalRef = useRef<HTMLDivElement>(null)
   // Stores the modal's computed position.
@@ -36,61 +35,19 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
     left: number
   } | null>(null)
 
-  // Generate a unique instance identifier.
-  const instanceId = useRef(Math.random().toString(36).substring(2))
-
-  // Update modal position so that its bottom aligns with the container's bottom.
   const updateModalPos = () => {
-    if (containerRef.current && modalRef.current) {
-      const containerRect = containerRef.current.getBoundingClientRect()
-      const modalHeight = modalRef.current.offsetHeight
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
       setModalPos({
-        top: containerRect.bottom + window.scrollY - modalHeight,
-        left: containerRect.right + 8 + window.scrollX // position 8px to the right
+        top: rect.top + window.scrollY,
+        left: rect.right + 8 + window.scrollX
       })
     }
   }
 
-  // If another instance opens its modal, close ours.
-  useEffect(() => {
-    const handleModalOpen = (e: CustomEvent<{ id: string }>) => {
-      if (e.detail.id !== instanceId.current && showModal) {
-        closeModal()
-      }
-    }
-    window.addEventListener(
-      "factCheckModalOpen",
-      handleModalOpen as EventListener
-    )
-    return () =>
-      window.removeEventListener(
-        "factCheckModalOpen",
-        handleModalOpen as EventListener
-      )
-  }, [showModal])
-
-  // Listen for page changes (popstate/hashchange) to close the modal.
-  useEffect(() => {
-    const handlePageChange = () => {
-      if (showModal) {
-        closeModal()
-      }
-    }
-    window.addEventListener("popstate", handlePageChange)
-    window.addEventListener("hashchange", handlePageChange)
-    return () => {
-      window.removeEventListener("popstate", handlePageChange)
-      window.removeEventListener("hashchange", handlePageChange)
-    }
-  }, [showModal])
-
-  const handleFlagClick = () => {
-    // Dispatch a custom event so that other instances close theirs.
-    window.dispatchEvent(
-      new CustomEvent("factCheckModalOpen", {
-        detail: { id: instanceId.current }
-      })
-    )
+  const handleFlagClick = (e: MouseEvent) => {
+    e.stopPropagation()
+    updateModalPos()
     setShowModal(true)
   }
 
@@ -120,17 +77,6 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
       })
   }, [promise, tweetId])
 
-  // Once the modal is open, use a brief timeout so that its rendered height can be measured.
-  useLayoutEffect(() => {
-    if (showModal) {
-      const timer = setTimeout(() => {
-        updateModalPos()
-      }, 0)
-      return () => clearTimeout(timer)
-    }
-  }, [showModal, claims])
-
-  // Update modal position on scroll and window resize.
   useEffect(() => {
     if (!showModal) return
     const handleScrollOrResize = () => {
@@ -166,7 +112,6 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
 
   return (
     <div className="relative" ref={containerRef}>
-      {/* Misinformation banner spans the full tweet width */}
       <Button
         variant={isMisleading ? "destructive" : "success"}
         className="w-full mt-4 mb-2 transition-all duration-200 hover:scale-102 hover:shadow-md active:scale-98"
@@ -190,9 +135,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
               left: modalPos.left
             }}
             className="z-[9999]">
-            <div
-              ref={modalRef}
-              className="bg-zinc-950 border border-zinc-800 max-h-[80vh] w-[350px] overflow-hidden shadow-lg rounded-lg flex flex-col">
+            <div className="bg-zinc-950 border border-zinc-800 h-[auto] h-max-[80vh] w-[350px] overflow-hidden shadow-lg rounded-lg flex flex-col">
               <header className="p-4">
                 <h2 className="text-zinc-100 text-lg font-semibold">
                   Deeper Dive
@@ -202,7 +145,6 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
                 </p>
               </header>
 
-              {/* Scrollable content container */}
               <div className="p-4 flex-1 overflow-y-auto">
                 {(claims || []).map((claim, index) => (
                   <div
@@ -245,6 +187,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
                         </svg>
                       </div>
                     </button>
+
                     <div
                       className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
                         activeClaim === index
@@ -275,6 +218,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
                   </div>
                 ))}
               </div>
+
               <footer className="p-4">
                 <Button variant="outline" onClick={closeModal}>
                   Close

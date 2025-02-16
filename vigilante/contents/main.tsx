@@ -3,6 +3,7 @@ import { useEffect } from "react"
 import { createRoot } from "react-dom/client"
 
 import { sendToBackground } from "@plasmohq/messaging"
+import { Storage } from "@plasmohq/storage"
 
 import FactCheckFlag from "~components/FactCheckFlag"
 
@@ -19,6 +20,7 @@ const ContentScript = () => {
   }, [])
 
   useEffect(() => {
+    const storage = new Storage()
     const processedTweets = new WeakSet<Element>()
     const observerOptions = {
       root: null,
@@ -26,13 +28,45 @@ const ContentScript = () => {
       threshold: 0
     }
 
-    const tweetObserver = new IntersectionObserver((entries, observer) => {
+    const tweetObserver = new IntersectionObserver(async (entries, observer) => {
+      // Get current settings
+      const isEnabled = await storage.get<boolean>("vigilante-enabled")
+      const semanticFilter = await storage.get<string>("vigilante-semantic-filter")
+      const excludedKeywords = await storage.get<string>("vigilante-excluded-keywords")
+
+      // Skip processing if extension is disabled
+      if (!isEnabled) {
+        return
+      }
+
       entries.forEach((entry) => {
         if (entry.isIntersecting && !processedTweets.has(entry.target)) {
           const processTweet = async () => {
             // Extract tweet data
             const tweetData = extractTweetDataFromElement(entry.target)
-            console.log("🔍 Tweet Detection:", {
+            
+            // Apply keyword exclusion filter
+            if (excludedKeywords) {
+              const keywords = excludedKeywords.toLowerCase().split(',').map(k => k.trim())
+              const tweetText = tweetData.text.toLowerCase()
+              if (keywords.some(keyword => tweetText.includes(keyword))) {
+                console.log("⏭️ Skipping tweet due to excluded keywords ", keywords, tweetData.id)
+                entry.target.remove()
+                return
+              }
+            }
+
+            // Apply semantic filter (dummy implementation for now)
+            // if (semanticFilter) {
+            //   const isRelevant = await isSemanticallyRelevant(tweetData.text, semanticFilter)
+            //   if (!isRelevant) {
+            //     console.log("⏭️ Skipping tweet due to semantic filter:", semanticFilter, tweetData.id)
+            //     entry.target.remove()
+            //     return
+            //   }
+            // }
+
+            console.log("�� Tweet Detection:", {
               id: tweetData.id,
               text: tweetData.text.substring(0, 50) + "...",
               hasMedia: tweetData.media.length > 0
@@ -128,6 +162,22 @@ const ContentScript = () => {
   }, [])
 
   return null
+}
+
+// Dummy semantic relevance checker with timeout
+async function isSemanticallyRelevant(tweetText: string, filterTopic: string): Promise<boolean> {
+  // Add artificial delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const response = await sendToBackground({
+    name: "semantic",
+    body: {
+      text: tweetText,
+      description: filterTopic
+    }
+  })
+  console.log("Semantic server response:", response)
+  return response.result == "YES"
 }
 
 export default ContentScript
