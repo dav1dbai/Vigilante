@@ -71,12 +71,31 @@ function generateChordData(data: Keywords) {
   return { nodes: uniqueNodes, matrix };
 }
 
+function generateBubbleData(data: Keywords) {
+  // Flatten the array of arrays and count occurrences
+  const wordCounts: Record<string, number> = {};
+  data.forEach((row) => {
+    row.keywords.forEach((word) => {
+      wordCounts[word] = (wordCounts[word] || 0) + 1;
+    });
+  });
+
+  // Convert counts to an array and sort by frequency
+  const sortedWords = Object.entries(wordCounts)
+    .sort((a, b) => b[1] - a[1]) // Sort by count descending
+    .slice(0, 15); // Get the top 15
+
+  return sortedWords;
+}
+
 export default await async function prepareData() {
   const { data } = await supabaseClient.from("keywords").select("keywords");
 
   const chordData = generateChordData(data as Keywords);
+  const bubbleData = generateBubbleData(data as Keywords);
 
   return {
     chordData,
+    bubbleData,
   };
 };

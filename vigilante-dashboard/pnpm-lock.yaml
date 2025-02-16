@@ -11,6 +11,9 @@ dependencies:
   '@nivo/chord':
     specifier: ^0.88.0
     version: 0.88.0(react-dom@19.0.0)(react@19.0.0)
+  '@nivo/circle-packing':
+    specifier: ^0.88.0
+    version: 0.88.0(react-dom@19.0.0)(react@19.0.0)
   '@nivo/heatmap':
     specifier: ^0.88.0
     version: 0.88.0(react-dom@19.0.0)(react@19.0.0)
@@ -26,6 +29,9 @@ dependencies:
   d3:
     specifier: ^7.9.0
     version: 7.9.0
+  d3-scale:
+    specifier: ^4.0.2
+    version: 4.0.2
   next:
     specifier: 15.1.7
     version: 15.1.7(react-dom@19.0.0)(react@19.0.0)
@@ -583,6 +589,23 @@ packages:
       - react-dom
     dev: false
 
+  /@nivo/circle-packing@0.88.0(react-dom@19.0.0)(react@19.0.0):
+    resolution: {integrity: sha512-tk605K4FQpatKzUvoSzt/jTUekW1QCqL3E1zANL6aMoPT9o6dY8X9hRdqCSyz14Fi97qOfOU/rVykpy+rilZsA==}
+    peerDependencies:
+      react: '>= 16.14.0 < 19.0.0'
+    dependencies:
+      '@nivo/colors': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/core': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/tooltip': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@react-spring/web': 9.7.5(react-dom@19.0.0)(react@19.0.0)
+      '@types/d3-hierarchy': 1.1.11
+      d3-hierarchy: 1.1.9
+      lodash: 4.17.21
+      react: 19.0.0
+    transitivePeerDependencies:
+      - react-dom
+    dev: false
+
   /@nivo/colors@0.88.0(react-dom@19.0.0)(react@19.0.0):
     resolution: {integrity: sha512-IZ+leYIqAlo7dyLHmsQwujanfRgXyoQ5H7PU3RWLEn1PP0zxDKLgEjFEDADpDauuslh2Tx0L81GNkWR6QSP0Mw==}
     peerDependencies:
@@ -918,6 +941,10 @@ packages:
     dependencies:
       '@types/geojson': 7946.0.16
     dev: true
+
+  /@types/d3-hierarchy@1.1.11:
+    resolution: {integrity: sha512-lnQiU7jV+Gyk9oQYk0GGYccuexmQPTp08E0+4BidgFdiJivjEvf+esPSdZqCZ2C7UwTWejWpqetVaU8A+eX3FA==}
+    dev: false
 
   /@types/d3-hierarchy@3.1.7:
     resolution: {integrity: sha512-tJFtNoYBtRtkNysX1Xq4sxtjK8YgoWUNpIiUee0/jHGRwqvzYxkq0hGVbbOGSz+JgFxxRu4K8nb3YpG3CMARtg==}
@@ -1696,6 +1723,10 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       d3-array: 3.2.4
+    dev: false
+
+  /d3-hierarchy@1.1.9:
+    resolution: {integrity: sha512-j8tPxlqh1srJHAtxfvOUwKNYJkQuBFdM1+JAUfq6xqH5eAqf93L7oG1NVqDa4CpFZNvnNKtCYEUC8KY9yEn9lQ==}
     dev: false
 
   /d3-hierarchy@3.1.2:

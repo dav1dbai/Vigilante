@@ -1,8 +1,8 @@
 "use client";
 
 import type prepareData from "@/app/api/prepare-data";
+import BubbleDiagram from "./bubble-diagram";
 import ChordDiagram from "./chord-diagram";
-import HourlyCalendar from "./hourly-diagram";
 
 interface DashboardProps {
   data: Awaited<ReturnType<typeof prepareData>>;
@@ -12,7 +12,7 @@ export default function Dashboard({ data }: DashboardProps) {
   return (
     <div className="text-black">
       <ChordDiagram data={data.chordData} />
-      <HourlyCalendar />
+      <BubbleDiagram data={data.bubbleData} />
     </div>
   );
   // const [visualizationData, setVisualizationData] = useState<any>(null);
