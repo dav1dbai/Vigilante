@@ -19,16 +19,23 @@ export default function LiveTweets() {
       .channel("tweets-cascade")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "tweets" },
-        (payload) => {
+        { event: "INSERT", schema: "public", table: "analyses" },
+        async (payload) => {
+          if (payload.new.is_misleading !== "misleading") return;
+
+          const { data } = await supabaseClient
+            .from("tweets")
+            .select("original_tweet_id,is_misleading,text")
+            .eq("original_tweet_id", payload.new.original_tweet_id)
+            .limit(1)
+            .single();
+
           const newTweet = {
             id: Math.random().toString(36).substr(2, 9), // Generate random ID for animation
-            text: payload.new.text,
+            text: data?.text,
             timestamp: Date.now(),
             is_misleading: payload.new.is_misleading,
           };
-
-          if (newTweet.is_misleading !== "misleading") return;
 
           setTweets((prevTweets) => [newTweet, ...prevTweets].slice(0, 50)); // Keep last 50 tweets
         }
