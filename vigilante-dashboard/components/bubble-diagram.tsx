@@ -7,8 +7,6 @@ const BubbleDiagram = ({ data }: { data: [string, number][] }) => {
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
 
-  console.log(data);
-
   // Create a linear color scale that maps the size to a color range.
   // Here, smaller bubbles will be a light color and larger bubbles a darker color.
   const colorScale = scaleLog<string>()

@@ -5,6 +5,12 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@nivo/bar':
+    specifier: ^0.88.0
+    version: 0.88.0(react-dom@19.0.0)(react@19.0.0)
+  '@nivo/bump':
+    specifier: ^0.88.0
+    version: 0.88.0(react-dom@19.0.0)(react@19.0.0)
   '@nivo/calendar':
     specifier: ^0.88.0
     version: 0.88.0(react-dom@19.0.0)(react@19.0.0)
@@ -549,6 +555,51 @@ packages:
       - react-dom
     dev: false
 
+  /@nivo/bar@0.88.0(react-dom@19.0.0)(react@19.0.0):
+    resolution: {integrity: sha512-wckwuHWeCikxGvvdRfGL+dVFsUD9uHk1r9s7bWUfOD+p8BWhxtYqfXpHolEfgGg3UyPaHtpGA7P4zgE5vgo7gQ==}
+    peerDependencies:
+      react: '>= 16.14.0 < 19.0.0'
+    dependencies:
+      '@nivo/annotations': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/axes': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/colors': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/core': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/legends': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/scales': 0.88.0
+      '@nivo/tooltip': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@react-spring/web': 9.7.5(react-dom@19.0.0)(react@19.0.0)
+      '@types/d3-scale': 4.0.9
+      '@types/d3-shape': 3.1.7
+      d3-scale: 4.0.2
+      d3-shape: 3.2.0
+      lodash: 4.17.21
+      react: 19.0.0
+    transitivePeerDependencies:
+      - react-dom
+    dev: false
+
+  /@nivo/bump@0.88.0(react-dom@19.0.0)(react@19.0.0):
+    resolution: {integrity: sha512-I/4LHIDjDpG7whSvc6nIgoFxENOGmzTSlnmCplMyGSmNKIZEyIgTl9jZLYWzl36/uoPSg+BYXfLeAmkvEdpwWQ==}
+    peerDependencies:
+      react: '>= 16.14.0 < 19.0.0'
+    dependencies:
+      '@nivo/axes': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/colors': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/core': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/legends': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/scales': 0.88.0
+      '@nivo/tooltip': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/voronoi': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@react-spring/web': 9.7.5(react-dom@19.0.0)(react@19.0.0)
+      '@types/d3-scale': 4.0.9
+      '@types/d3-shape': 3.1.7
+      d3-scale: 4.0.2
+      d3-shape: 3.2.0
+      react: 19.0.0
+    transitivePeerDependencies:
+      - react-dom
+    dev: false
+
   /@nivo/calendar@0.88.0(react-dom@19.0.0)(react@19.0.0):
     resolution: {integrity: sha512-sTpoaN5bNRwywRIVKAv7oo+/ZZjX0cjBcpbyFQZqXnEmFX8tEO55Rn/469zWDG776Gk7wHcuwmQfEIqwWM9PfQ==}
     peerDependencies:
@@ -701,6 +752,22 @@ packages:
     dependencies:
       '@nivo/core': 0.88.0(react-dom@19.0.0)(react@19.0.0)
       '@react-spring/web': 9.7.5(react-dom@19.0.0)(react@19.0.0)
+      react: 19.0.0
+    transitivePeerDependencies:
+      - react-dom
+    dev: false
+
+  /@nivo/voronoi@0.88.0(react-dom@19.0.0)(react@19.0.0):
+    resolution: {integrity: sha512-MyiNLvODthFoMjQ7Wjp693nogbTmVEx8Yn/7QkJhyPQbFyyA37TF/D1a/ox4h2OslXtP6K9QFN+42gB/zu7ixw==}
+    peerDependencies:
+      react: '>= 16.14.0 < 19.0.0'
+    dependencies:
+      '@nivo/core': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@nivo/tooltip': 0.88.0(react-dom@19.0.0)(react@19.0.0)
+      '@types/d3-delaunay': 6.0.4
+      '@types/d3-scale': 4.0.9
+      d3-delaunay: 6.0.4
+      d3-scale: 4.0.2
       react: 19.0.0
     transitivePeerDependencies:
       - react-dom
@@ -898,7 +965,6 @@ packages:
 
   /@types/d3-delaunay@6.0.4:
     resolution: {integrity: sha512-ZMaSKu4THYCU6sV64Lhg6qjf1orxBthaC161plr5KuPHo3CNm8DTHiLw/5Eq2b6TsNP0W0iJrUOFscY6Q450Hw==}
-    dev: true
 
   /@types/d3-dispatch@3.0.6:
     resolution: {integrity: sha512-4fvZhzMeeuBJYZXRXrRIQnvUYfyXwYmLsdiN7XXmVNQKKw1cM8a5WdID0g1hVFZDqT9ZqZEY5pD44p24VS7iZQ==}

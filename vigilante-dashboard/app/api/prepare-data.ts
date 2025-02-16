@@ -1,11 +1,11 @@
 import { supabaseClient } from "@/lib/supabase";
 
-type Keywords = { keywords: string[] }[];
+type Keywords = { created_at: string; keywords: string[] }[];
 
 type AMEdge = { source: string; target: string; weight: number };
 
 function generateChordData(data: Keywords) {
-  const MIN_THRESHOLD = 2; // Minimum co-occurrence count to include a pair
+  const MIN_THRESHOLD = 3; // Minimum co-occurrence count to include a pair
 
   const pairCounts: { [pair: string]: number } = {};
 
@@ -88,14 +88,63 @@ function generateBubbleData(data: Keywords) {
   return sortedWords;
 }
 
+function generateStackedBarData(data: Keywords) {
+  // Initialize hourly buckets for the past 12 hours.
+  const hourlyCounts: Record<string, Record<string, number>> = {};
+  const now = new Date();
+  const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
+
+  for (let i = 0; i < 12; i++) {
+    const hourDate = new Date(twelveHoursAgo.getTime() + i * 60 * 60 * 1000);
+    const hourKey = hourDate.toISOString().slice(0, 13) + ":00:00";
+    hourlyCounts[hourKey] = {};
+  }
+
+  // Count keywords per hour.
+  data.forEach((row) => {
+    const rowDate = new Date(row.created_at);
+    const hourKey = rowDate.toISOString().slice(0, 13) + ":00:00";
+
+    if (hourlyCounts[hourKey]) {
+      row.keywords.forEach((keyword) => {
+        hourlyCounts[hourKey][keyword] =
+          (hourlyCounts[hourKey][keyword] || 0) + 1;
+      });
+    }
+  });
+
+  // Prepare data for the stacked bar chart.
+  const stackedBarData: { hour: string; [keyword: string]: number }[] = [];
+
+  Object.keys(hourlyCounts).forEach((hour) => {
+    const top10Keywords = Object.entries(hourlyCounts[hour])
+      .sort(([, countA], [, countB]) => countB - countA)
+      .slice(0, 10);
+
+    const dataPoint: { hour: string; [keyword: string]: number } = { hour };
+    top10Keywords.forEach(([keyword, count]) => {
+      dataPoint[keyword] = count;
+    });
+
+    stackedBarData.push(dataPoint);
+  });
+
+  console.log(stackedBarData);
+  return stackedBarData;
+}
+
 export default await async function prepareData() {
-  const { data } = await supabaseClient.from("keywords").select("keywords");
+  const { data } = await supabaseClient
+    .from("keywords")
+    .select("keywords,created_at");
 
   const chordData = generateChordData(data as Keywords);
   const bubbleData = generateBubbleData(data as Keywords);
+  const stackedBarData = generateStackedBarData(data as Keywords);
 
   return {
     chordData,
     bubbleData,
+    stackedBarData,
   };
 };

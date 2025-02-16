@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@nivo/bar": "^0.88.0",
+    "@nivo/bump": "^0.88.0",
     "@nivo/calendar": "^0.88.0",
     "@nivo/chord": "^0.88.0",
     "@nivo/circle-packing": "^0.88.0",
