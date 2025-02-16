@@ -32,13 +32,53 @@ function IndexPopup() {
       border: "none",
       margin: "0",
       outline: "none",
-      borderRadius: "2px"
+      borderRadius: "8px"
     }}>
-      <header style={{ marginBottom: "24px" }}>
+      <header style={{ 
+        marginBottom: "24px",
+        position: "relative",
+        overflow: "hidden"
+      }}>
+        <div style={{
+          position: "absolute",
+          top: "-100%",
+          left: "-100%",
+          height: "300%",
+          width: "300%",
+          background: `linear-gradient(
+            45deg,
+            #DB4E66 0%,
+            #A24688 50%,
+            #4E3ABA 100%
+          )`,
+          opacity: 0.1,
+          animation: "shine 3s infinite"
+        }} />
+        <style>
+          {`
+            @keyframes shine {
+              0% {
+                transform: translateY(100%) translateX(100%);
+              }
+              100% {
+                transform: translateY(-100%) translateX(-100%);
+              }
+            }
+          `}
+        </style>
         <h1 style={{ 
-          fontSize: "20px", 
+          fontSize: "24px", 
           fontWeight: 600,
-          marginBottom: "8px"
+          marginBottom: "8px",
+          background: `linear-gradient(
+            45deg,
+            #DB4E66 0%,
+            #A24688 50%,
+            #4E3ABA 100%
+          )`,
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundSize: "200% 200%",
         }}>Vigilante Settings</h1>
         <p style={{ 
           fontSize: "14px",
@@ -51,7 +91,10 @@ function IndexPopup() {
         <div style={{ 
           display: "flex", 
           alignItems: "center", 
-          justifyContent: "space-between" 
+          justifyContent: "space-between",
+          padding: "16px",
+          backgroundColor: "rgba(24, 24, 27, 0.5)",
+          borderRadius: "8px",
         }}>
           <div>
             <h2 style={{ 
@@ -89,65 +132,85 @@ function IndexPopup() {
         </div>
 
         {/* Semantic Filter Field */}
-        <div>
+        <div style={{
+          padding: "16px",
+          backgroundColor: "rgba(24, 24, 27, 0.5)",
+          borderRadius: "8px",
+        }}>
           <h2 style={{ 
-              fontSize: "14px",
-              fontWeight: 500
-            }}>
+            fontSize: "14px",
+            fontWeight: 500,
+            marginBottom: "4px"
+          }}>
             Semantic Filter
           </h2>
           <p style={{ 
-              fontSize: "12px",
-              color: "rgb(161, 161, 170)"
-            }}>
+            fontSize: "12px",
+            color: "rgb(161, 161, 170)",
+            marginBottom: "12px"
+          }}>
             Only show posts matching these topics
           </p>
           <input
             type="text"
             value={semanticFilter}
             onChange={(e) => setSemanticFilter(e.target.value)}
-            placeholder="machine learning"
+            placeholder="e.g., machine learning, AI, technology"
             style={{
-              width: "70%",
-              padding: "8px 12px",
+              width: "100%",
+              padding: "10px 12px",
               fontSize: "14px",
               borderRadius: "6px",
               backgroundColor: "rgb(24, 24, 27)",
               color: "rgb(244, 244, 245)",
               border: "1px solid rgb(39, 39, 42)",
               outline: "none",
+              transition: "border-color 0.2s",
+              ":focus": {
+                borderColor: "#A24688"
+              }
             }}
           />
         </div>
 
         {/* Keyword Exclusions Field */}
-        <div>
+        <div style={{
+          padding: "16px",
+          backgroundColor: "rgba(24, 24, 27, 0.5)",
+          borderRadius: "8px",
+        }}>
           <h2 style={{
-              fontSize: "14px",
-              fontWeight: 500
-            }}>
+            fontSize: "14px",
+            fontWeight: 500,
+            marginBottom: "4px"
+          }}>
             Excluded Keywords
           </h2>
           <p style={{
-              fontSize: "12px",
-              color: "rgb(161, 161, 170)"
-            }}>
-            Skip posts containing these words
+            fontSize: "12px",
+            color: "rgb(161, 161, 170)",
+            marginBottom: "12px"
+          }}>
+            Skip posts containing these words (comma-separated)
           </p>
           <input
             type="text"
             value={excludedKeywords}
             onChange={(e) => setExcludedKeywords(e.target.value)}
-            placeholder="coding, meme"
+            placeholder="e.g., coding, meme, nsfw"
             style={{
-              width: "70%",
-              padding: "8px 12px",
+              width: "100%",
+              padding: "10px 12px",
               fontSize: "14px",
               borderRadius: "6px",
               backgroundColor: "rgb(24, 24, 27)",
               color: "rgb(244, 244, 245)",
               border: "1px solid rgb(39, 39, 42)",
               outline: "none",
+              transition: "border-color 0.2s",
+              ":focus": {
+                borderColor: "#A24688"
+              }
             }}
           />
         </div>

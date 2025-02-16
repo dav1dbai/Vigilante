@@ -1,11 +1,12 @@
 import base64
+import asyncio
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List
+from typing import List, Optional
 
 from util.supabase import supabase_client
 from helpers.claim import analyze_claim
-from util.llm import call_groq
-from util.prompts import EXTRACT_CLAIMS_PROMPT, IS_VERIFIABLE_PROMPT, SEMANTIC_RELEVANCE_PROMPT
+from util.llm import call_groq, call_unified_groq
+from util.prompts import EXTRACT_CLAIMS_PROMPT, IS_VERIFIABLE_PROMPT, SEMANTIC_RELEVANCE_PROMPT, UNIFIED_ANALYSIS_PROMPT
 
 
 def extract_claims(author: str, content: str) -> List[str]:
@@ -50,8 +51,7 @@ def evaluate_claims_in_post(author: str, content: str):
         }
 
     with ThreadPoolExecutor() as executor:
-        futures = {executor.submit(process_claim, claim)
-                                   : claim for claim in claims}
+        futures = {executor.submit(process_claim, claim): claim for claim in claims}
 
         for future in as_completed(futures):
             try:
@@ -81,12 +81,13 @@ def is_verifiable(tweet_text):
     return completion["content"].strip() == "YES"
 
 
-def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp, save_to_supabase=True):
-    # check if already analyzed tweet
+async def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp, save_to_supabase=True):
+    # Check if tweet was already analyzed
     response = supabase_client.table("tweets").select("id").eq(
         "original_tweet_id", tweet_id).execute()
 
     if response.data:
+        # Existing analysis retrieval code remains the same:
         analysis_response = supabase_client.table("analyses").select(
             "is_misleading").eq("original_tweet_id", tweet_id).limit(1).single().execute()
 
@@ -97,75 +98,105 @@ def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp, sa
 
         claim_results = claims_response.data
     else:
-        verifiable = is_verifiable(tweet_text)
-        # print(tweet_text)
-        # print(verifiable)
-
-        if verifiable:
-            if base64_image:
-                try:
-                    # Create message with image for caption extraction
-                    image_message = [
-                        {
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": "Describe the main content of this image, focusing especially on extracting any text."},
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"{base64_image}"
-                                    }
+        # New unified analysis:
+        content = tweet_text
+        if base64_image:
+            try:
+                image_message = [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Describe the main content of this image, focusing especially on extracting any text."},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"{base64_image}"
                                 }
-                            ]
-                        }
-                    ]
+                            }
+                        ]
+                    }
+                ]
+                image_caption = call_groq(image_message, model="llama-3.2-11b-vision-preview")["content"]
+                content = f"{tweet_text}\n[Image content: {image_caption}]"
+            except Exception as e:
+                print(f"Error processing image for tweet {tweet_id}: {str(e)}")
+                content = tweet_text
 
-                    # Get image caption
-                    image_caption = call_groq(
-                        image_message, model="llama-3.2-11b-vision-preview")["content"]
-                    # print("image_caption", image_caption)
-                    # Combine tweet text with image caption for claim evaluation
-                    combined_content = f"{tweet_text}\n[Image content: {image_caption}]"
-                    claim_results = evaluate_claims_in_post(
-                        author=tweet_author, content=combined_content)
-                except Exception as e:
-                    print(
-                        f"Error processing image for tweet {tweet_id}: {str(e)}")
-                    claim_results = evaluate_claims_in_post(
-                        author=tweet_author, content=tweet_text)
+        analysis = call_unified_groq([
+            {
+                "role": "system",
+                "content": UNIFIED_ANALYSIS_PROMPT,
+            },
+            {
+                "role": "user",
+                "content": f"Author: {tweet_author}\nContent: {content}"
+            }
+        ])
+
+        try:
+            if analysis.get("is_verifiable") == "NO":
+                claim_results = []
+                is_misleading = None
             else:
-                claim_results = evaluate_claims_in_post(
-                    author=tweet_author, content=tweet_text)
+                claim_results = []
+                for claim_data in analysis["claims"]:
+                    if not claim_data.get("claim") or not claim_data.get("explanation"):
+                        print("Skipping claim because it's missing data")
+                        continue
+                    claim_results.append({
+                        "claim": claim_data["claim"],
+                        "sources": [],  # Sources are now part of explanation
+                        "explanation": claim_data["explanation"],
+                        "is_misleading": claim_data["is_misleading"] == "YES"
+                        })
+                    is_misleading = any(c["is_misleading"] for c in claim_results)
+        except Exception as e:
+            print(f"Error analyzing post {tweet_id}: {e}")
+            return {
+                "error": "Failed to analyze post.",
+                "details": str(e)
+            }
 
-            is_misleading = any(c["is_misleading"] for c in claim_results)
-        else:
-            claim_results = []
-            is_misleading = None
-
-        # save the tweet analysis to Supabase
+        # Save to Supabase if enabled using asynchronous (batch) submits
         if save_to_supabase:
             try:
-                supabase_client.table("tweets").insert({
-                    "original_tweet_id": tweet_id,
-                    "author": tweet_author,
-                    "text": tweet_text,
-                    "timestamp": timestamp
-                }).execute()
-
-                for claim in claim_results:
-                    supabase_client.table("claims").insert({
+                # Insert tweet record first because it may be needed as a foreign key.
+                await asyncio.to_thread(
+                    lambda: supabase_client.table("tweets").insert({
                         "original_tweet_id": tweet_id,
-                        "claim": claim["claim"],
-                        "sources": claim["sources"],
-                        "explanation": claim["explanation"],
-                        "is_misleading": "misleading" if claim["is_misleading"] else "accurate"
+                        "author": tweet_author,
+                        "text": tweet_text,
+                        "timestamp": timestamp
                     }).execute()
+                )
 
-                supabase_client.table("analyses").insert({
-                    "original_tweet_id": tweet_id,
-                    "is_misleading": "misleading" if is_misleading is True else ("accurate" if is_misleading is False else None)
-                }).execute()
+                # Create asynchronous tasks for each claim insert.
+                claim_tasks = []
+                for claim in claim_results:
+                    if claim['claim'] is None or not claim['sources']:
+                        print("Skipping claim because it's empty")
+                        continue
+                    task = asyncio.to_thread(
+                        lambda c=claim: supabase_client.table("claims").insert({
+                            "original_tweet_id": tweet_id,
+                            "claim": c["claim"],
+                            "sources": c["sources"],
+                            "explanation": c["explanation"],
+                            "is_misleading": "misleading" if c["is_misleading"] else "accurate"
+                        }).execute()
+                    )
+                    claim_tasks.append(task)
 
+                # Also create a task for the analysis insert.
+                analysis_task = asyncio.to_thread(
+                    lambda: supabase_client.table("analyses").insert({
+                        "original_tweet_id": tweet_id,
+                        "is_misleading": "misleading" if is_misleading is True else ("accurate" if is_misleading is False else None)
+                    }).execute()
+                )
+
+                # Run claim inserts and the analysis insert concurrently.
+                await asyncio.gather(*claim_tasks, analysis_task)
             except Exception as e:
                 return {
                     "error": "Failed to save analysis to the database.",
@@ -177,6 +208,7 @@ def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp, sa
         "claims": claim_results,
         "final_decision": is_misleading
     }
+
 
 def check_semantic_relevance(description, tweet_text):
     completion = call_groq([

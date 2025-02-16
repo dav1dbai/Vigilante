@@ -3,6 +3,7 @@ from fastapi import FastAPI, Body
 from fastapi.middleware.cors import CORSMiddleware
 from helpers.post import analyze_post, check_semantic_relevance
 from analytics.analytics import router as analytics_router  # Import analytics router
+from pydantic import BaseModel
 
 
 app = FastAPI()
@@ -21,39 +22,25 @@ app.add_middleware(
 
 app.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
 
-@app.post("/analyze_tweet")
-def analyze_tweet(
-    tweet_id: str = Body(..., embed=True),
-    tweet_author: str = Body(..., embed=True),
-    tweet_text: str = Body(..., embed=True),
-    base64_image: Optional[str] = Body(None, embed=True),
-    timestamp: str = Body(..., embed=True)
-):
-    """
-    Accepts:
-      1) tweet_id (str)
-      2) tweet_text (str)
-      3) base64_image (str - PNG image in base64)
+class TweetData(BaseModel):
+    tweet_id: str
+    tweet_author: str
+    tweet_text: str
+    base64_image: Optional[str] = None
+    timestamp: str
 
-    Steps:
-      - Decode the base64 image and save as PNG (optional)
-      - Analyze post
-      - Build final JSON response in format:
-         {
-           "tweet_id": "...",
-           "claims": [
-             {
-               "content": "...",
-               "is_misleading": "...",
-               "explanation": "...",
-               "sources": ["...", "..."]
-             }
-           ],
-           "final_decision": true/false
-         }
-    """
-    #print(f"Analyzing tweet with data: {tweet_id}, {tweet_author}, {tweet_text}")
-    return analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timestamp)
+@app.post("/analyze_tweet")
+async def analyze_tweet_endpoint(tweet_data: TweetData):
+    # IMPORTANT: Await the analyze_post result so that we return the actual data
+    result = await analyze_post(
+        tweet_id=tweet_data.tweet_id,
+        tweet_author=tweet_data.tweet_author,
+        tweet_text=tweet_data.tweet_text,
+        base64_image=tweet_data.base64_image,
+        timestamp=tweet_data.timestamp,
+        save_to_supabase=True,
+    )
+    return result
 
 
 @app.post("/semantic_filter")
