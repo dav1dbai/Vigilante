@@ -40,7 +40,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect()
       setModalPos({
-        top: rect.top - 50 + window.scrollY,
+        top: rect.top - 200 + window.scrollY,
         left: rect.right + 8 + window.scrollX
       })
     }
@@ -170,7 +170,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
   }
 
   // Only show flag if there are misleading claims
-  if (!claims.some(claim => claim.is_misleading === "misleading")) {
+  if (!claims.some(claim => claim.is_misleading)) {
     return null
   }
 
@@ -223,7 +223,7 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
                     <div
                       key={index}
                       className={`w-full border rounded-lg p-3 transition-all duration-200 hover:shadow-md ${
-                        claim.is_misleading === "misleading"
+                        claim.is_misleading
                           ? "border-[#DA4E67]/20 bg-[#DA4E67]/10"
                           : "border-green-500/20 bg-green-500/10"
                       }`}>
@@ -232,9 +232,9 @@ const FactCheckFlag: React.FC<FactCheckFlagProps> = ({ tweetId, promise }) => {
                         className="w-full text-left">
                         <div className="flex items-start gap-3">
                           <div className={`mt-1 ${
-                            claim.is_misleading === "misleading" ? "text-[#DA4E67]" : "text-green-500"
+                            claim.is_misleading ? "text-[#DA4E67]" : "text-green-500"
                           }`}>
-                            {claim.is_misleading === "misleading" ? (
+                            {claim.is_misleading ? (
                               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" />
                               </svg>

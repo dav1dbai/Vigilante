@@ -13,10 +13,10 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const [semanticFilter, setSemanticFilter] = useStorage<string>("vigilante-semantic-filter", "")
   const [excludedKeywords, setExcludedKeywords] = useStorage<string>("vigilante-excluded-keywords", "")
 
-  useEffect(() => {
-    console.log("isEnabled", isEnabled)
-    setIsEnabled(true)
-  }, [isEnabled])
+  // useEffect(() => {
+  //   console.log("isEnabled", isEnabled)
+  //   setIsEnabled(true)
+  // }, [isEnabled])
 
   const content = (
     <div className="fixed inset-0 z-[9998] flex items-start justify-end pt-4 pr-16">

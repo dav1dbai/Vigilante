@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from util.supabase import supabase_client
 from helpers.claim import analyze_claim
-from util.llm import call_groq, call_unified_groq
+from util.llm import call_groq
 from util.prompts import EXTRACT_CLAIMS_PROMPT, IS_VERIFIABLE_PROMPT, SEMANTIC_RELEVANCE_PROMPT, UNIFIED_ANALYSIS_PROMPT
 
 
@@ -60,7 +60,7 @@ def evaluate_claims_in_post(author: str, content: str):
                     evaluations.append(result)
             except Exception as e:
                 print(f"Error processing claim {futures[future]}: {e}")
-
+    # print("evaluations", evaluations)
     return evaluations
 
 
@@ -99,63 +99,38 @@ async def analyze_post(tweet_id, tweet_author, tweet_text, base64_image, timesta
         claim_results = claims_response.data
     else:
         # New unified analysis:
-        content = tweet_text
-        if base64_image:
-            try:
-                image_message = [
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": "Describe the main content of this image, focusing especially on extracting any text."},
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"{base64_image}"
+        verifiable = is_verifiable(tweet_text)
+        if verifiable:
+            print("verifiable")
+            content = tweet_text  # Initialize content with tweet_text
+            if base64_image:
+                try:
+                    image_message = [
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": "Describe the main content of this image, focusing especially on extracting any text."},
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"{base64_image}"
+                                    }
                                 }
-                            }
-                        ]
-                    }
-                ]
-                image_caption = call_groq(image_message, model="llama-3.2-11b-vision-preview")["content"]
-                content = f"{tweet_text}\n[Image content: {image_caption}]"
-            except Exception as e:
-                print(f"Error processing image for tweet {tweet_id}: {str(e)}")
-                content = tweet_text
+                            ]
+                        }
+                    ]
+                    image_caption = call_groq(image_message, model="llama-3.2-11b-vision-preview")["content"]
+                    content = f"{tweet_text}\n[Image content: {image_caption}]"
+                except Exception as e:
+                    print(f"Error processing image for tweet {tweet_id}: {str(e)}")
+                    # content already set to tweet_text, no need to set again
 
-        analysis = call_unified_groq([
-            {
-                "role": "system",
-                "content": UNIFIED_ANALYSIS_PROMPT,
-            },
-            {
-                "role": "user",
-                "content": f"Author: {tweet_author}\nContent: {content}"
-            }
-        ])
-
-        try:
-            if analysis.get("is_verifiable") == "NO":
-                claim_results = []
-                is_misleading = None
-            else:
-                claim_results = []
-                for claim_data in analysis["claims"]:
-                    if not claim_data.get("claim") or not claim_data.get("explanation"):
-                        print("Skipping claim because it's missing data")
-                        continue
-                    claim_results.append({
-                        "claim": claim_data["claim"],
-                        "sources": [],  # Sources are now part of explanation
-                        "explanation": claim_data["explanation"],
-                        "is_misleading": claim_data["is_misleading"] == "YES"
-                        })
-                    is_misleading = any(c["is_misleading"] for c in claim_results)
-        except Exception as e:
-            print(f"Error analyzing post {tweet_id}: {e}")
-            return {
-                "error": "Failed to analyze post.",
-                "details": str(e)
-            }
+            claim_results = evaluate_claims_in_post(author=tweet_author, content=content)
+            # print("claim_results", claim_results)
+            is_misleading = any(c["is_misleading"] for c in claim_results)
+        else:
+            claim_results = []
+            is_misleading = None
 
         # Save to Supabase if enabled using asynchronous (batch) submits
         if save_to_supabase:
