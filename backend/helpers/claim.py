@@ -1,5 +1,20 @@
 from util.llm import call_groq, call_perplexity
-from util.prompts import DETERMINE_IS_MISLEADING_PROMPT, SOURCES_INPUT_PROMPT, SOURCES_SYSTEM_PROMPT
+from util.prompts import DETERMINE_IS_MISLEADING_PROMPT, IS_CONTROVERSIAL_PROMPT, SOURCES_INPUT_PROMPT, SOURCES_SYSTEM_PROMPT
+
+
+def check_valid_claim(claim: str):
+    completion = call_groq([
+        {
+            "role": "system",
+            "content": IS_CONTROVERSIAL_PROMPT
+        },
+        {
+            "role": "user",
+            "content": claim
+        }
+    ], model="gemma2-9b-it")
+
+    return completion["content"].strip() == "YES"
 
 
 def fact_check_claim(post_content: str, claim: str):
@@ -46,6 +61,10 @@ def determine_is_misleading(post_content: str, claim: str, evidence: str):
 
 
 def analyze_claim(post_content: str, claim: str):
+    is_valid = check_valid_claim(claim)
+    if not is_valid:
+        return None
+
     sources, explanation = fact_check_claim(post_content, claim)
     is_misleading = determine_is_misleading(post_content, claim, explanation)
 

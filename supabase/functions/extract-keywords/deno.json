@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "@std/dotenv": "jsr:@std/dotenv@^0.225.3",
+    "@supabase/functions-js": "jsr:@supabase/functions-js@^2.4.4",
+    "@supabase/supabase-js": "jsr:@supabase/supabase-js@^2.48.1",
+    "groq-sdk": "npm:groq-sdk@^0.15.0"
+  }
+}

@@ -72,7 +72,30 @@ export default function TweetsByDayPage() {
   const options = {
     responsive: true,
     scales: {
-      y: { beginAtZero: true }  // linear scale requires registration
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.8)',
+        }
+      },
+      x: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.8)',
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: 'rgba(255, 255, 255, 0.8)'
+        }
+      }
     }
   };
 
