@@ -96,6 +96,7 @@ def call_groq(messages, model="llama-3.2-11b-vision-preview", temperature=0, max
 
 
 def call_perplexity(messages, temperature=0):
+    print("hit perplexity")
     url = "https://api.perplexity.ai/chat/completions"
 
     payload = {
